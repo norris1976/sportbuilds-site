@@ -16,6 +16,12 @@ if (form) {
     }
   };
 
+  const kitBody = () => {
+    const fd = new FormData(form);
+    fd.append('host', location.href); fd.append('ckjs_version', '6');   // same non-personal fields Kit's own embed sends
+    return fd;
+  };
+
   form.addEventListener('submit', async (e) => {
     if (form.dataset.configured !== 'true') {
       e.preventDefault();
@@ -28,11 +34,20 @@ if (form) {
     try {
       const res = await fetch(form.action, {
         method: 'POST',
-        body: new FormData(form),                                   // fields[first_name] + email_address only
+        body: kitBody(),                                            // first name + email, plus Kit's non-personal page metadata
         headers: { Accept: 'application/json', 'X-CKJS-Version': '6' }, // the same headers Kit's own embed sends
       });
       const data = res.ok ? await res.json() : null;
-      if (data && (data.status === 'success' || data.status === 'quarantined')) {
+      if (data && data.status === 'quarantined') {
+        // Kit holds this sign-up until the person completes its own security check (reCAPTCHA) on a Kit page.
+        // The subscription is NOT confirmed yet, so never say "check your inbox" here.
+        form.classList.add('done');
+        const url = typeof data.url === 'string' && data.url.startsWith('https://app.kit.com/') ? data.url : form.dataset.fallbackUrl;
+        msg.hidden = false; msg.className = 'msg ok'; msg.textContent = 'One more step: Kit needs a quick security check before it can send your confirmation email. ';
+        if (url) { const a = document.createElement('a'); a.href = url; a.rel = 'noopener'; a.textContent = 'Complete the security check'; msg.append(a); }
+        return;
+      }
+      if (data && data.status === 'success') {
         form.classList.add('done');                                 // hides the fields, consent line and button
         show('Check your inbox to confirm your subscription.', 'ok');
         return;

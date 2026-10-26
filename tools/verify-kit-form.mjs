@@ -23,6 +23,7 @@ async function scenario(name, { mode, js = true, viewport = { width: 390, height
     kit.push({ method: req.method(), url: req.url(), headers: req.headers(), body: req.postData() });
     if (mode === 'abort') return route.abort('failed');
     if (mode === 'success') return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify({ status: 'success' }) });
+    if (mode === 'quarantined') return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify({ consent: { enabled: false }, status: 'quarantined', url: 'https://app.kit.com/forms/guards/abc' }) });
     if (mode === 'error') return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify({ status: 'error', errors: { fields: ['email_address'], messages: ['Email address is invalid'] } }) });
     if (mode === 'http500') return route.fulfill({ status: 500, headers: cors, body: 'nope' });
     return route.fulfill({ status: 200, headers: { 'content-type': 'text/html' }, body: '<p>stub</p>' });
@@ -46,12 +47,19 @@ const ok = (n, extra = '') => { results.push(n); console.log('ok  ', n, extra); 
   assert.equal(kit.length, 1); const r = kit[0];
   assert.equal(r.method, 'POST'); assert.equal(r.url, ACTION); assert.match(r.headers['content-type'], /^multipart\/form-data/);
   assert.match(r.headers['accept'], /application\/json/); assert.equal(r.headers['x-ckjs-version'], '6');
-  const names = [...r.body.matchAll(/name="([^"]+)"/g)].map((m) => m[1]).sort(); assert.deepEqual(names, ['email_address', 'fields[first_name]'], 'only first name + email are sent');
+  const names = [...r.body.matchAll(/name="([^"]+)"/g)].map((m) => m[1]).sort(); assert.deepEqual(names, ['ckjs_version', 'email_address', 'fields[first_name]', 'host'], 'first name + email + non-personal page metadata only');
   assert.match(r.body, /form-test@example\.invalid/);
   assert.equal(await page.textContent('#subscribe-msg'), 'Check your inbox to confirm your subscription.');
   assert.equal(await page.isVisible('[name="email_address"]'), false, 'fields hidden after success');
   await page.locator('#subscribe').screenshot({ path: `${out}/form-success-390-${tag}.png` });
-  ok('fetch success: one POST, only 2 fields, inline thank-you', `(sent fields: ${names.join(', ')})`); await ctx.close(); }
+  ok('fetch success: one POST, name+email+host+ckjs_version, inline thank-you', `(sent fields: ${names.join(', ')})`); await ctx.close(); }
+
+// 1b. quarantined: Kit wants its security check; must NOT claim the inbox will get an email
+{ const { page, ctx, kit } = await scenario('quarantined', { mode: 'quarantined' });
+  assert.equal(kit.length, 1); const m = await page.textContent('#subscribe-msg');
+  assert.doesNotMatch(m, /Check your inbox/); assert.match(m, /One more step/);
+  assert.equal(await page.getAttribute('#subscribe-msg a', 'href'), 'https://app.kit.com/forms/guards/abc');
+  await page.locator('#subscribe').screenshot({ path: `${out}/form-quarantined-390-${tag}.png` }); ok('quarantined: honest "one more step" with link to Kit security check'); await ctx.close(); }
 
 // 2. Kit validation error
 { const { page, ctx, kit } = await scenario('kit error', { mode: 'error' });
