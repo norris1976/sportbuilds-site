@@ -180,3 +180,8 @@ Fix:
 
 ## Planner screenshots refreshed for the white input card (Mon 26 Oct, about 14:40 Europe/London)
 - The planner's input card is now white. Re-ran `tools/make-planner-shots.mjs` against https://5k.sportbuilds.co/ (now in dark mode so the white card stands out; 0 green-ish pixels), rebuilt, `npm run deploy`, and checked that the live preview serves the new hashed images (byte-identical to `dist/`). No code changes besides the colour scheme in the shot script.
+
+## Domain live on Cloudflare (Mon 26 Oct, about 14:45 to 15:00 Europe/London)
+- Zone active; apex CNAME (proxied) to `sportbuilds-site.pages.dev` created via API, domain went active in about 3 minutes; all five pages return 200 on `https://sportbuilds.co`.
+- **Problem found:** Cloudflare injected its Web Analytics beacon into the HTML (blocked by the CSP, but a request attempt and a console error, and it contradicts the privacy page). **Fix:** `Cache-Control: no-transform` on `/*` in the generated `_headers`; redeployed; headless check shows only same-origin requests and 0 console errors.
+- `www` A record added; the redirect rule could not be created (token lacks redirect-ruleset permission). See `docs/CLOUDFLARE_AND_DNS.md`.
