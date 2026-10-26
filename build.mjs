@@ -318,13 +318,14 @@ writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${C.
   const textFiles = () => [...walk(OUT).filter((f) => f.endsWith('.html')), ...walk(join(OUT, 'assets')).filter((f) => f.endsWith('.css'))];
   const rewrite = (files) => { for (const f of files) { let t = readFileSync(f, 'utf8'); const o = t; for (const [from, to] of [...map].sort((a, b) => b[0].length - a[0].length)) t = t.split(from).join(to); if (t !== o) writeFileSync(f, t); } };
   const hashOne = (f) => { const h = createHash('sha256').update(readFileSync(f)).digest('hex').slice(0, 10); const np = f.replace(/\.([^./\\]+)$/, `.${h}.$1`); renameSync(f, np); map.set(web(f), web(np)); };
-  const STABLE = join(OUT, 'assets', 'issue-1') + sep; // email images: stable file names on purpose (referenced from sent emails), NOT fingerprinted, served with a short cache (see _headers)
-  const assets = walk(join(OUT, 'assets')).filter((f) => !f.startsWith(STABLE));
+  const STABLE_DIRS = ['issue-1', 'issue-2'];
+  const isStable = (f) => STABLE_DIRS.some((d) => f.startsWith(join(OUT, 'assets', d) + sep)); // email images: stable file names on purpose (referenced from sent emails), NOT fingerprinted, served with a short cache (see _headers)
+  const assets = walk(join(OUT, 'assets')).filter((f) => !isStable(f));
   for (const f of assets.filter((f) => /\.(woff2|webp|png|svg|txt)$/.test(f))) hashOne(f);
   rewrite(walk(join(OUT, 'assets')).filter((f) => f.endsWith('.css')));
   hashOne(join(OUT, 'assets/style.css')); hashOne(join(OUT, 'assets/subscribe.js'));
   rewrite(textFiles());
-  const unhashed = walk(join(OUT, 'assets')).filter((f) => !f.startsWith(STABLE)).filter((f) => !/\.[0-9a-f]{10}\.[a-z0-9]+$/.test(f));
+  const unhashed = walk(join(OUT, 'assets')).filter((f) => !isStable(f)).filter((f) => !/\.[0-9a-f]{10}\.[a-z0-9]+$/.test(f));
   if (unhashed.length) throw new Error('unfingerprinted assets: ' + unhashed.join(', '));
 }
 // Cloudflare Pages reads _headers. `Cache-Control: no-transform` on /* stops Cloudflare injecting its Web Analytics beacon (the privacy page promises no analytics); Pages merges it with the per-path Cache-Control values. connect-src allows ONLY Kit's form endpoint (used when the visitor presses
@@ -333,7 +334,7 @@ const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 's
 // Cloudflare Pages JOINS Cache-Control values from every matching rule (it cannot override), so the immutable rule must not match /assets/issue-1/*.
 // Hashed assets live at /assets/<file> and /assets/<dir>/*, so those are listed explicitly (single-segment placeholder + one rule per subfolder), and the stable-named email images get a short cache.
 const IMMUTABLE = 'Cache-Control: public, max-age=31536000, immutable';
-const assetDirs = readdirSync(join(OUT, 'assets')).filter((d) => statSync(join(OUT, 'assets', d)).isDirectory() && d !== 'issue-1');
-const assetRules = [['/assets/:file', IMMUTABLE], ...assetDirs.map((d) => [`/assets/${d}/*`, IMMUTABLE]), ['/assets/issue-1/*', 'Cache-Control: public, max-age=3600']].map(([p, h]) => `${p}\n  ${h}\n\n`).join('');
+const assetDirs = readdirSync(join(OUT, 'assets')).filter((d) => statSync(join(OUT, 'assets', d)).isDirectory() && !['issue-1', 'issue-2'].includes(d));
+const assetRules = [['/assets/:file', IMMUTABLE], ...assetDirs.map((d) => [`/assets/${d}/*`, IMMUTABLE]), ['/assets/issue-1/*', 'Cache-Control: public, max-age=3600'], ['/assets/issue-2/*', 'Cache-Control: public, max-age=3600']].map(([p, h]) => `${p}\n  ${h}\n\n`).join('');
 writeFileSync(join(OUT, '_headers'), `/*\n  Content-Security-Policy: ${csp}\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n  Cache-Control: no-transform\n\n/welcome\n  X-Robots-Tag: noindex, nofollow\n\n/welcome/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: public, max-age=0, must-revalidate\n\n${assetRules}/\n  Cache-Control: public, max-age=0, must-revalidate\n\n/archive/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/about/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/privacy/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/404.html\n  Cache-Control: public, max-age=0, must-revalidate\n\n/sitemap.xml\n  Cache-Control: public, max-age=0, must-revalidate\n\n/robots.txt\n  Cache-Control: public, max-age=0, must-revalidate\n`);
 console.log(`built ${Object.keys(pages).length + 1} pages, ${builds.length} build(s); Kit form ${kitConfigured ? 'CONFIGURED' : 'NOT configured (placeholder)'}`);

@@ -162,7 +162,8 @@ t('cache safety: every referenced /assets file is fingerprinted, exists, and is 
   assert.match(h, new RegExp('\\n/assets/:file\\n {2}' + imm)); assert.match(h, new RegExp('\\n/assets/img/\\*\\n {2}' + imm)); assert.match(h, new RegExp('\\n/assets/fonts/\\*\\n {2}' + imm));
   assert.doesNotMatch(h, /\n\/assets\/\*\n/, 'a bare /assets/* immutable rule would also match /assets/issue-1/*');
   assert.match(h, /\n\/assets\/issue-1\/\*\n {2}Cache-Control: public, max-age=3600\n/);
-  assert.equal(h.match(/max-age=3600/g).length, 1);
+  assert.match(h, /\n\/assets\/issue-2\/\*\n {2}Cache-Control: public, max-age=3600\n/);
+  assert.equal(h.match(/max-age=3600/g).length, 2);
   for (const p of ['/', '/archive/*', '/about/*', '/privacy/*', '/404.html', '/sitemap.xml']) assert.match(h, new RegExp('\\n' + p.replace(/[*.\/]/g, '\\$&') + '\\n {2}Cache-Control: public, max-age=0, must-revalidate'));
   // content changes -> new URL
   const r2 = buildCopy((dir) => { const p = join(dir, 'public/assets/style.css'); writeFileSync(p, readFileSync(p, 'utf8') + '\n/* changed */'); });
