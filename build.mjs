@@ -241,9 +241,9 @@ pages['/privacy/'] = layout({
   <p class="placeholder" role="note">PLACEHOLDER: this is a short summary, not a finished privacy policy. A full policy will be published before launch.</p>
   <h2 id="p1">This website</h2>
   <ul>
-    <li>This site sets no cookies and runs no analytics or tracking scripts of its own.</li>
+    <li>This site sets no cookies and does not add analytics or tracking scripts of its own.</li>
     <li>It loads no third-party scripts, fonts or images.</li>
-    <li>Like any website, it is served by a hosting provider (planned: Cloudflare Pages), which handles your request and may keep standard technical logs under its own policies.</li>
+    <li>The site is served by Cloudflare (Cloudflare Pages). Cloudflare handles your request and may keep technical logs, and may collect traffic statistics or security data (such as your IP address, browser type and the page requested) to deliver, protect and measure the service. This is handled under <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare&rsquo;s own privacy policy</a>, and we may use Cloudflare&rsquo;s aggregate figures to see how many people visit.</li>
   </ul>
   <h2>Subscribing</h2>
   <ul>
