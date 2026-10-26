@@ -268,7 +268,8 @@ pages['/privacy/'] = layout({
   <p>Each weekly tool is a separate website with its own address, and each one should say what it does with your input.</p>
   <ul>
     <li><strong>Saturday 5K Pace Planner</strong> (5k.sportbuilds.co) works entirely in your browser. What you type is not sent to me or to anyone else. It has no analytics, sets no cookies, saves nothing on your device between visits, and loads nothing from other websites.</li>
-    <li>If you press &ldquo;Copy as text&rdquo; the result goes to your clipboard, and &ldquo;Download PNG card&rdquo; saves an image to your device. Both happen only when you press them.</li>
+    <li><strong>Court Night</strong> (court.sportbuilds.co) also works entirely in your browser: what you type is not sent to me or to anyone else, and it has no account, no analytics and no cookies. Unlike the planner, it does save the current night (the player names, pairings and scores) in your browser&rsquo;s local storage on your device, so a refresh does not lose it. I never receive it. You can remove it with &ldquo;Clear saved night&rdquo; in the tool, or by clearing this site&rsquo;s data in your browser.</li>
+    <li>If you press &ldquo;Copy as text&rdquo; the result goes to your clipboard, and &ldquo;Download PNG card&rdquo; saves an image to your device. Both happen only when you press them. In Court Night, &ldquo;Copy snapshot link&rdquo; puts the standings, including the names, inside the link itself; anyone you send the link to can read them.</li>
   </ul>
   <h2>Emailing me</h2>
   <p>Messages to hello@sportbuilds.co are forwarded by Cloudflare Email Routing to my personal mailbox. I use them only to reply to you.</p>

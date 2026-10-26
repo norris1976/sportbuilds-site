@@ -33,5 +33,41 @@
         "alt": "The Saturday 5K Pace Planner on a phone showing the start of its form with example values: PB time, target time, age and category."
       }
     }
+  },
+  {
+    "issue": 2,
+    "title": "Court Night",
+    "description": "Run a social padel night from your phone: americano or mexicano pairings court by court, real points scores and live standings. Free, no account, saved on your own device. Also works for tennis, badminton and pickleball.",
+    "date": "2026-11-02",
+    "url": "https://court.sportbuilds.co",
+    "repo": "https://github.com/norris1976/court-night",
+    "tags": [
+      "padel",
+      "americano",
+      "mexicano",
+      "social sport",
+      "standings"
+    ],
+    "sport": "Padel",
+    "images": {
+      "desktop": {
+        "src": "/assets/img/court-desktop.webp",
+        "width": 720,
+        "height": 720,
+        "alt": "Court Night on a desktop screen, near-black header with gold accents: round 4 of an example night with two courts, score boxes for each pair, and a standings table beside it."
+      },
+      "phone": {
+        "src": "/assets/img/court-phone-result.webp",
+        "width": 480,
+        "height": 923,
+        "alt": "Court Night on a phone showing round 4 of an example night: two courts, each with two pairs of invented names and large score boxes, and who is sitting out."
+      },
+      "phoneForm": {
+        "src": "/assets/img/court-phone-form.webp",
+        "width": 480,
+        "height": 923,
+        "alt": "Court Night on a phone showing the setup form with ten invented player names added, a night name and a courts selector."
+      }
+    }
   }
 ]
