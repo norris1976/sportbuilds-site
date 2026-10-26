@@ -11,7 +11,7 @@ const out = process.argv[3] ?? 'docs/screenshots';
 const tag = process.argv[4] ?? 'v1';
 mkdirSync(out, { recursive: true });
 const pages = [['home', '/'], ['archive', '/archive/'], ['welcome', '/welcome/'], ['about', '/about/'], ['privacy', '/privacy/'], ['404', '/does-not-exist/']];
-const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/usr/bin/google-chrome', args: ['--no-sandbox', '--host-resolver-rules=MAP app.kit.com 127.0.0.1'] });
 const problems = []; const seenInternal = new Set(); const externalLinks = new Set();
 const log = (...a) => console.log(...a);
 
@@ -68,7 +68,7 @@ if (/welcome/.test(sm)) problems.push('welcome page must not be in sitemap');
 if (process.env.CHECK_HEADERS === '1') {
   for (const p of ['/', '/archive/', '/about/', '/privacy/', '/welcome/']) {
     const h = (await api.get(base + p)).headers();
-    if (!/connect-src 'none'/.test(h['content-security-policy'] ?? '')) problems.push(`${p}: CSP header missing`);
+    if (!/connect-src https:\/\/app\.kit\.com; form-action 'self' https:\/\/app\.kit\.com;/.test(h['content-security-policy'] ?? '')) problems.push(`${p}: CSP header missing`);
     if (h['x-content-type-options'] !== 'nosniff') problems.push(`${p}: nosniff missing`);
     if (!h['referrer-policy']) problems.push(`${p}: referrer-policy missing`);
     if (p === '/welcome/' && !/noindex/.test(h['x-robots-tag'] ?? '')) problems.push('/welcome/: X-Robots-Tag noindex missing');
@@ -83,8 +83,8 @@ await ctx.close();
 // form behaviour on a phone-sized viewport
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-  const page = await ctx.newPage(); const posts = [];
-  page.on('request', (r) => { if (r.method() === 'POST') posts.push(r.url()); });
+  const kitRequests = []; await ctx.route('https://app.kit.com/**', (r) => { kitRequests.push(r.request().url()); r.abort(); });
+  const page = await ctx.newPage();
   await page.goto(base + '/', { waitUntil: 'networkidle' });
   const attrs = await page.evaluate(() => Object.fromEntries(['fields[first_name]', 'email_address'].map((n) => { const e = document.querySelector(`[name="${n}"]`); return [n, { type: e.type, autocomplete: e.autocomplete, inputMode: e.inputMode, required: e.required, fontSize: getComputedStyle(e).fontSize }]; })));
   assert.equal(attrs.email_address.type, 'email'); assert.equal(attrs.email_address.autocomplete, 'email'); assert.equal(attrs.email_address.required, true);
@@ -95,12 +95,11 @@ await ctx.close();
   assert.equal(await page.inputValue('[name="email_address"]'), 'tim@example.com');
   await page.locator('#subscribe').scrollIntoViewIfNeeded();
   await page.screenshot({ path: `${out}/form-filled-390-${tag}.png` });
-  await page.tap('button[type=submit]');
-  await page.waitForSelector('#subscribe-msg:not([hidden])');
-  const m = await page.textContent('#subscribe-msg'); log('unconfigured submit message:', m);
-  assert.match(m, /isn.t connected yet/); assert.doesNotMatch(m, /thank|success|subscribed/i);
-  assert.equal(posts.length, 0, 'no POST should be sent while unconfigured');
-  await page.locator('#subscribe').screenshot({ path: `${out}/form-unconfigured-message-390-${tag}.png` });
+  assert.equal(await page.getAttribute('#subscribe-form', 'action'), 'https://app.kit.com/forms/10098455/subscriptions');
+  assert.equal(await page.locator('#subscribe-form input[type=checkbox]').count(), 0, 'no checkbox');
+  assert.equal(await page.textContent('#subscribe button[type=submit]'), 'Send me the weekly build');
+  assert.equal(kitRequests.length, 0, 'nothing is sent to Kit on load or while typing');
+  log('form renders and is filled (NOT submitted here; submit behaviour is covered by tools/verify-kit-form.mjs with Kit requests intercepted)');
   await ctx.close();
 }
 await browser.close();

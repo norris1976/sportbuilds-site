@@ -15,6 +15,10 @@ const fmtDate = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB'
 const host = (u) => new URL(u).host;
 const kitConfigured = C.KIT_FORM_ID && C.KIT_FORM_ID !== 'REPLACE_ME' && /^\d+$/.test(C.KIT_FORM_ID);
 
+// Logo: inline lockup in the header (currentColor), mark tile as the favicon. Both come from docs/logo-options/option-<LOGO_OPTION>*.svg.
+const logoSvg = readFileSync(`docs/logo-options/option-${C.LOGO_OPTION}.svg`, 'utf8')
+  .replace(/<title>.*?<\/title>/, '').replace(' role="img" aria-label="Sport Builds"', ' class="logo" aria-hidden="true" focusable="false"').trim();
+
 const NAV = [['/', 'Home'], ['/archive/', 'Archive'], ['/about/', 'About']];
 const FOOT = [['/', 'Home'], ['/archive/', 'Archive'], ['/about/', 'About'], ['/privacy/', 'Privacy']];
 
@@ -28,7 +32,8 @@ function layout({ path, title, description, body, noindex = false, hero }) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(full)}</title>
 <meta name="description" content="${esc(description)}">
-<meta name="theme-color" content="#0b3d2e">
+<meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09130f" media="(prefers-color-scheme: dark)">
 ${noindex ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="canonical" href="${esc(canon)}">`}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -43,13 +48,15 @@ ${noindex ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="can
 <meta property="og:image:alt" content="Sport Builds: a different sports app, vibe-coded every week">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true">SB</span><span>${esc(C.SITE_NAME)}</span></a>
+    <a class="brand" href="/" aria-label="${esc(C.SITE_NAME)}, home">${logoSvg}</a>
     <nav aria-label="Main"><ul>
 ${NAV.map(([h, l]) => `      <li><a href="${h}"${h === path ? ' aria-current="page"' : ''}>${l}</a></li>`).join('\n')}
     </ul></nav>
@@ -65,6 +72,7 @@ ${body}
     <nav aria-label="Footer"><ul>
 ${FOOT.map(([h, l]) => `      <li><a href="${h}">${l}</a></li>`).join('\n')}
     </ul></nav>
+    <p class="built-by"><a href="https://nozza.co" rel="noopener">Built by Tim @ Nozza.co</a></p>
   </div>
 </footer>
 ${body.includes('id="subscribe-form"') ? '<script src="/assets/subscribe.js" defer></script>' : ''}
@@ -74,39 +82,45 @@ ${body.includes('id="subscribe-form"') ? '<script src="/assets/subscribe.js" def
 }
 
 const hero = (kicker, h1, lede, extra = '', slim = false) => `<section class="hero${slim ? ' slim' : ''}"><div class="wrap">
-  <p class="kicker">${esc(kicker)}</p>
+  <p class="eyebrow">${esc(kicker)}</p>
   <h1>${esc(h1)}</h1>
   ${lede ? `<p class="lede">${lede}</p>` : ''}
   ${extra}
 </div></section>`;
 
-const tagList = (b) => b.tags?.length ? `<ul class="tags" aria-label="Tags">${b.tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
+const tagList = (b) => { const t = (b.tags ?? []).filter((x) => x.toLowerCase() !== (b.sport ?? '').toLowerCase()); return t.length ? `<ul class="tags" aria-label="Tags">${t.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''; };
 
+const pad2 = (n) => String(n).padStart(2, '0');
 function buildCard(b, { featured = false, heading = 'h3', label = '' } = {}) {
+  const im = b.images;
   return `<article class="card build${featured ? ' featured' : ''}">
-  <div class="meta">${label ? `<strong>${esc(label)}</strong>` : ''}<span class="badge">Issue ${b.issue}</span><time datetime="${esc(b.date)}">${fmtDate(b.date)}</time></div>
+  ${im?.phoneForm ? `<div class="thumb">${[im.phoneForm, im.phone].map((x) => `<img src="${esc(x.src)}" width="${x.width}" height="${x.height}" alt="${esc(x.alt)}"${featured ? '' : ' loading="lazy"'} decoding="async">`).join('')}</div>` : ''}
+  <div class="build-body">
+  <div class="meta">${label ? `<span class="label">${esc(label)}</span>` : ''}${b.sport ? `<span class="chip">${esc(b.sport)}</span>` : ''}<span class="badge">Issue ${b.issue}</span><time datetime="${esc(b.date)}">${fmtDate(b.date)}</time></div>
   <${heading}>${esc(b.title)}</${heading}>
-  <p>${esc(b.description)}</p>
+  <p class="pitch">${esc(b.description)}</p>
   ${tagList(b)}
   <div class="links">
     <a class="btn primary" href="${esc(b.url)}" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span><span class="sr-only"> (${esc(host(b.url))})</span></a>
-    <a class="btn" href="${esc(b.repo)}" rel="noopener">Source code</a>
+    <a class="btn" href="${esc(b.repo)}" rel="noopener">Source code</a>${b.issueUrl ? `\n    <a class="btn" href="${esc(b.issueUrl)}" rel="noopener">Read the issue</a>` : ''}
   </div>
   ${b.fallbackUrl ? `<p class="mirror">Also available at <a href="${esc(b.fallbackUrl)}" rel="noopener">${esc(host(b.fallbackUrl))}</a>.</p>` : ''}
+  </div>
 </article>`;
 }
 
 function signup(idSuffix = '') {
   const consent = C.KIT_CONSENT_TEXT.trim()
-    ? `<p class="consent">${esc(C.KIT_CONSENT_TEXT.trim())}</p>`
+    ? `<p class="consent" id="consent">${esc(C.KIT_CONSENT_TEXT.trim()).replace('privacy page', '<a href="/privacy/">privacy page</a>')}</p>`
     : `<p class="placeholder" role="note">PLACEHOLDER: paste Kit's own consent text here (KIT_CONSENT_TEXT in site.config.mjs). Not written yet on purpose.</p>`;
   const action = kitConfigured ? ` action="https://app.kit.com/forms/${C.KIT_FORM_ID}/subscriptions"` : '';
   const uid = kitConfigured && C.KIT_UID && C.KIT_UID !== 'REPLACE_ME' ? ` data-uid="${esc(C.KIT_UID)}"` : '';
-  return `<section class="card signup" id="subscribe" aria-labelledby="subscribe-h">
-  <h2 id="subscribe-h">Get the weekly build</h2>
-  <p>One email a week: the new tool, how it was built, and what went wrong along the way.</p>
-  <!-- TODO(KIT): form wiring lives in site.config.mjs (KIT_FORM_ID / KIT_UID / KIT_CONSENT_TEXT). Not connected until KIT_FORM_ID is a real number. -->
-  <form id="subscribe-form" method="post"${action} data-configured="${kitConfigured}"${uid}${kitConfigured ? ` data-sv-form="${C.KIT_FORM_ID}"` : ''}>
+  return `<section class="band signup" id="subscribe" aria-labelledby="subscribe-h"><div class="wrap band-grid">
+  <div class="band-intro"><p class="eyebrow">Free, weekly</p><h2 id="subscribe-h">Get the weekly build</h2>
+  <p>One email a week: the new tool, how it was built, and what went wrong along the way.</p></div>
+  <div class="band-form">
+  <!-- Kit wiring lives in site.config.mjs (KIT_FORM_ID / KIT_UID / KIT_CONSENT_TEXT). Plain HTML POST works without JavaScript; subscribe.js upgrades it to an in-page request. -->
+  <form id="subscribe-form" method="post"${action} data-configured="${kitConfigured}"${uid} data-fallback-url="${esc(C.KIT_HOSTED_URL)}" aria-describedby="consent">
     <div class="row">
       <label>First name
         <input type="text" name="fields[first_name]" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" required>
@@ -116,34 +130,48 @@ function signup(idSuffix = '') {
       </label>
     </div>
     ${consent}
-    <button class="btn primary" type="submit" data-element="submit">Subscribe</button>
+    <button class="btn primary" type="submit" data-element="submit">Send me the weekly build</button>
     <p id="subscribe-msg" class="msg" role="status" aria-live="polite" hidden></p>
     ${kitConfigured ? '' : `<p class="placeholder" role="note">PLACEHOLDER: the Kit form is not connected yet, so this button sends nothing.</p>`}
   </form>
-</section>`;
+  </div>
+</div></section>`;
 }
 
 const pages = {};
 const sitemap = [];
 
 // ── Home ────────────────────────────────────────────────────────────────
+const im = latest.images;
 pages['/'] = layout({
   path: '/', title: C.SITE_NAME,
   description: 'A different sports app, vibe-coded every week, with honest build notes. Free weekly newsletter by Tim Norris.',
-  hero: hero('Weekly newsletter', 'A different sports app, vibe-coded every week.', 'I build one small, useful sports tool each week with AI, then tell you honestly how it went: the prompts, what broke and what I fixed.', `<div class="cta"><a class="btn primary" href="#subscribe">Get the weekly build</a><a class="btn ghost" href="/archive/">Browse all builds</a></div>`),
-  body: `<div class="wrap stack">
-<section aria-labelledby="this-week"><h2 id="this-week" class="sr-only">This week\u2019s build</h2>
-${buildCard(latest, { featured: true, label: 'This week\u2019s build' })}
-</section>
-<section class="card" aria-labelledby="how"><h2 id="how">How Sport Builds works</h2>
+  hero: `<section class="hero"><div class="wrap hero-grid">
+  <div class="hero-copy">
+    <p class="eyebrow">Weekly newsletter</p>
+    <h1>A different sports app, <span class="hl">vibe-coded</span> every week.</h1>
+    <p class="lede">I build one small, useful sports tool each week with AI, then tell you honestly how it went: the prompts, what broke and what I fixed.</p>
+    <div class="cta"><a class="btn primary" href="#subscribe">Get the weekly build</a><a class="btn ghost" href="/archive/">Browse all builds</a></div>
+  </div>
+${im ? `  <figure class="preview">
+    <div class="shot-desktop"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>${esc(host(latest.url))}</span></div><img src="${esc(im.desktop.src)}" width="${im.desktop.width}" height="${im.desktop.height}" alt="${esc(im.desktop.alt)}" fetchpriority="high" decoding="async"></div>
+    <img class="shot-phone" src="${esc(im.phone.src)}" width="${im.phone.width}" height="${im.phone.height}" alt="${esc(im.phone.alt)}" decoding="async">
+    <figcaption>Latest build, issue ${latest.issue}: ${esc(latest.title)}. <a href="${esc(latest.url)}" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span></a></figcaption>
+  </figure>` : ''}
+</div></section>`,
+  body: `<section class="section" aria-labelledby="this-week"><div class="wrap">
+<div class="section-head"><div><p class="eyebrow">Latest build</p><h2 id="this-week">This week\u2019s build</h2></div></div>
+${buildCard(latest, { featured: true, heading: 'h3' })}
+</div></section>
+<section class="section" aria-labelledby="how"><div class="wrap">
+<div class="section-head"><div><p class="eyebrow">The method</p><h2 id="how">How Sport Builds works</h2></div></div>
 <ol class="steps">
-  <li><strong>One idea a week</strong>A small sports tool that does one job well, built from a clear brief.</li>
-  <li><strong>Built with AI</strong>Vibe-coded in public: real prompts, real tests, a live demo and open source code.</li>
-  <li><strong>Honest notes</strong>Every issue says what broke and how it was fixed, not just the shiny result.</li>
-</ol></section>
-${older.length ? `<section aria-labelledby="recent"><h2 id="recent">Recent builds</h2><ul class="archive">${older.slice(0, 3).map((b) => `<li>${buildCard(b)}</li>`).join('')}</ul><p class="more"><a href="/archive/">See the full archive</a></p></section>` : `<p class="muted small">More builds are on the way, one a week. <a href="/archive/">See the archive</a>.</p>`}
-${signup()}
-</div>`,
+  <li><strong>One idea a week</strong><span>A small sports tool that does one job well, built from a clear brief.</span></li>
+  <li><strong>Built with AI</strong><span>Vibe-coded in public: real prompts, real tests, a live demo and open source code.</span></li>
+  <li><strong>Honest notes</strong><span>Every issue says what broke and how it was fixed, not just the shiny result.</span></li>
+</ol>${older.length ? '' : `<p class="more muted">More builds are on the way, one a week. <a href="/archive/">See the archive</a>.</p>`}</div></section>
+${older.length ? `<section class="section" aria-labelledby="recent"><div class="wrap"><div class="section-head"><div><p class="eyebrow">Archive</p><h2 id="recent">Recent builds</h2></div></div><ul class="archive">${older.slice(0, 3).map((b) => `<li>${buildCard(b)}</li>`).join('')}</ul><p class="more"><a href="/archive/">See the full archive &rarr;</a></p></div></section>` : ''}
+${signup()}`,
 });
 sitemap.push('/');
 
@@ -152,7 +180,7 @@ pages['/archive/'] = layout({
   path: '/archive/', title: 'Archive',
   description: 'Every Sport Builds tool so far, newest first, each with a live demo and open source code.',
   hero: hero('Archive', 'Every build so far', `${builds.length} ${builds.length === 1 ? 'tool' : 'tools'}, newest first. Each lives on its own address and has open source code.`, '', true),
-  body: `<div class="wrap stack"><ul class="archive">${builds.map((b, i) => `<li>${buildCard(b, { featured: i === 0, heading: 'h2' })}</li>`).join('')}</ul>
+  body: `<div class="wrap stack"><ul class="archive${builds.length === 1 ? ' single' : ''}">${builds.map((b, i) => `<li>${buildCard(b, { featured: builds.length === 1 && i === 0, heading: 'h2' })}</li>`).join('')}</ul>
 <p class="muted small">Want to see something built? Subscribe and reply to any issue with your idea.</p></div>`,
 });
 sitemap.push('/archive/');
@@ -197,9 +225,7 @@ pages['/about/'] = layout({
     <li>Where a tool uses a published formula or table, the tool says where it comes from.</li>
   </ul>
   <h2>Get in touch</h2>
-  <p>Idea for a build, or spotted a bug? Reply to any newsletter email.</p>
-  <p>Other contact:</p>
-  <p>${contact}</p>
+  <p>Idea for a build, or spotted a bug? Reply to any newsletter email${C.CONTACT_EMAIL ? `, or email ${contact}.` : '.'}</p>${C.CONTACT_EMAIL ? '' : `\n  <p>Other contact:</p>\n  <p>${contact}</p>`}
   <p><a class="btn primary" href="/#subscribe">Get the weekly build</a></p>
 </section></div>`,
 });
@@ -242,6 +268,7 @@ const p404 = layout({
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync('public', OUT, { recursive: true });
+writeFileSync(join(OUT, 'favicon.svg'), readFileSync(`docs/logo-options/option-${C.LOGO_OPTION}-mark.svg`, 'utf8'));
 for (const [path, html] of Object.entries(pages)) {
   const dir = join(OUT, path); mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'index.html'), html);
@@ -250,8 +277,8 @@ writeFileSync(join(OUT, '404.html'), p404);
 const lastmod = latest.date;
 writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap.map((p) => `  <url><loc>${C.SITE_URL}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${C.SITE_URL}/sitemap.xml\n`);
-// Cloudflare Pages reads _headers. connect-src 'none' enforces "no background network calls";
-// form-action only allows posting to Kit.
-const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'self' https://app.kit.com https://kit.com; base-uri 'none'; frame-ancestors 'none'; object-src 'none'`;
+// Cloudflare Pages reads _headers. connect-src allows ONLY Kit's form endpoint (used when the visitor presses
+// the subscribe button); nothing else can be fetched. form-action allows only Kit for the no-JavaScript POST.
+const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://app.kit.com; form-action 'self' https://app.kit.com; base-uri 'none'; frame-ancestors 'none'; object-src 'none'`;
 writeFileSync(join(OUT, '_headers'), `/*\n  Content-Security-Policy: ${csp}\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n\n/welcome\n  X-Robots-Tag: noindex, nofollow\n\n/welcome/*\n  X-Robots-Tag: noindex, nofollow\n\n/assets/*\n  Cache-Control: public, max-age=3600\n`);
 console.log(`built ${Object.keys(pages).length + 1} pages, ${builds.length} build(s); Kit form ${kitConfigured ? 'CONFIGURED' : 'NOT configured (placeholder)'}`);

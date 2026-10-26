@@ -86,3 +86,5 @@ Under UK data protection law you have rights over your personal data, including 
 ### Changes
 
 I will update this page if the way the site works changes, and show the date at the top.
+
+- [TIM TO CONFIRM] Kit only: if a visitor has JavaScript switched off, the form posts to Kit directly and they see a Kit page; Kit may set its own cookies there. The live pages set none.

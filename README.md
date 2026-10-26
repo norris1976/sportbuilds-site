@@ -12,14 +12,14 @@ Each week's tool lives on its **own subdomain** (issue 1 is `5k.sportbuilds.co`)
 
 ```bash
 npm run build     # writes dist/
-npm test          # 8 tests: data validation, add-a-week, Kit wiring, noindex, forbidden-content guard
+npm test          # 15 tests: data validation, design tokens (WCAG AA), fonts/CSP, add-a-week, Kit wiring, noindex, forbidden-content guard
 npm run serve     # http://localhost:5174 (mimics Cloudflare Pages: /about/ -> about/index.html, custom 404)
 ```
 
 Browser checks (need `playwright-core` and Chrome): `node tools/verify.mjs http://localhost:5174 docs/screenshots v6`
 loads every page at 390px and 1280px and checks status, console errors, external requests, overflow, headings, tap targets,
-internal links, noindex and the form. `node tools/verify-configured.mjs` proves the configured form posts the right fields to Kit
-without contacting Kit. `node tools/make-images.mjs` regenerates the social image and touch icon.
+internal links, noindex and the form. `node tools/verify-kit-form.mjs <baseUrl> <dir> <tag>` exercises the real form (success, Kit error, network failure,
+HTTP 500, validation, JavaScript off) with every request to Kit intercepted, so Kit is never contacted. `node tools/make-images.mjs` regenerates the social image and touch icon.
 
 ## Add a week (one entry)
 
@@ -41,23 +41,32 @@ Add one object to `data/builds.json` and push. The archive, the home page ("This
 - `url` is the canonical link (the tool's own subdomain). Optional `fallbackUrl` shows an "Also available at" line, handy while DNS or a certificate is still settling. Remove it once not needed (issue 1 currently has the `vercel.app` alias).
 - `/welcome/` always shows issue `WELCOME_ISSUE` (set in `site.config.mjs`, currently 1) as "your first build".
 
-## Subscribe form (Kit): where the placeholder is
+## Subscribe form (Kit)
 
-Everything is in **`site.config.mjs`**:
+Wired to Kit form `10098455` (hosted page https://sport-builds.kit.com/7b44b294d8). Everything is in **`site.config.mjs`**:
 
-| Constant | Set to |
+| Constant | Value |
 |---|---|
-| `KIT_FORM_ID` | the number in Kit's embed `action="https://app.kit.com/forms/<ID>/subscriptions"` (currently `'REPLACE_ME'`) |
-| `KIT_UID` | Kit's `data-uid` value (optional) |
-| `KIT_CONSENT_TEXT` | Kit's own consent line, pasted exactly. Empty means a clearly marked placeholder is shown. Don't write your own legal wording |
+| `KIT_FORM_ID` | `'10098455'` (posts to `https://app.kit.com/forms/10098455/subscriptions`). Set to `REPLACE_ME` to switch the form off with a clear "not connected" message |
+| `KIT_UID` | `'7b44b294d8'` |
+| `KIT_HOSTED_URL` | Kit's hosted page, shown only as a fallback link if an in-page sign-up cannot be confirmed |
+| `KIT_CONSENT_TEXT` | the consent line above the button; the words "privacy page" become a link to `/privacy/` |
+| `CONTACT_EMAIL` | `hello@sportbuilds.co` |
 
-While `KIT_FORM_ID` is `REPLACE_ME`, the form blocks submit and shows "Sign-up isn't connected yet, so nothing was sent", with no fake success and no network call.
-Once it is a number, the form is a native `POST` to Kit with `fields[first_name]` and `email_address` (first name and email only). No JavaScript talks to Kit, so there is no CORS problem and the Content Security Policy only needs `form-action https://app.kit.com`, already in `dist/_headers`.
+Our own styled form: first name and email only, no checkbox, no Kit badge, no Kit JavaScript. How it submits:
+- **JavaScript on** (`public/assets/subscribe.js`): after browser validation, `fetch()` POSTs the form data to Kit with the same two headers Kit's own embed uses (`Accept: application/json`, `X-CKJS-Version: 6`). Kit's preflight allows any origin and these headers. On `status: success` (or `quarantined`) the form is replaced by "Check your inbox to confirm your subscription."; Kit's own error messages are shown if it rejects; if the request fails the page says it couldn't confirm the sign-up (never a fake success) and links to Kit's hosted page.
+- **JavaScript off**: the plain HTML `POST` goes to Kit and the browser shows whatever Kit returns.
+- CSP in `dist/_headers`: `connect-src https://app.kit.com` and `form-action 'self' https://app.kit.com`, nothing broader.
 
-In Kit, set the form's after-subscribe behaviour and the double opt-in confirmation redirect to `https://sportbuilds.co/welcome/` so `/welcome/` appears after confirmation.
-If you would rather use Kit's JavaScript embed, paste it in `build.mjs` (`signup()`) and relax `script-src`/`connect-src` in the `_headers` string accordingly. Say so in the privacy page if you do.
+Kit settings (done by the Editor): double opt-in on, confirmation email from hello@sportbuilds.co, after-confirm redirect to `https://sportbuilds.co/welcome/` (that URL only resolves once the domain is attached).
 
-Other placeholders: `CONTACT_EMAIL` (empty, shows a marked placeholder on About and Privacy), About page bio and photo, full privacy policy. Search the repo for `PLACEHOLDER` and `TODO(`.
+Other placeholders still marked in the pages: About page bio and photo, full privacy policy (draft in `docs/DRAFT_COPY.md`, not live until Tim approves). Search the repo for `PLACEHOLDER` and `TODO(`.
+
+## Design and logo
+- Design system lives in `public/assets/style.css` (tokens at the top, light and dark; one gold accent used only as a fill behind dark text so it passes AA in both). Motion is wrapped in `prefers-reduced-motion: no-preference`.
+- Provisional logo: option B from `docs/logo-options/`. To swap, change the single `LOGO_OPTION` line in `site.config.mjs` ('a', 'b' or 'c'), then run `node tools/make-images.mjs` to refresh the OG image and touch icon. Favicon and header lockup are generated at build time.
+- `node tools/fullpage.mjs <baseUrl> <outDir>` takes full-page screenshots of the five pages at 1280 and 390. `node tools/logo-sheet.mjs` re-renders the logo preview sheet; `/workspace/fv/bin/python tools/make-logos.py` regenerates the logo SVGs (needs fontTools; text is converted to paths).
+- Unused hero directions: `docs/design-alternatives/`.
 
 ## Deploy to Cloudflare Pages
 
@@ -92,4 +101,4 @@ A direct-upload project **cannot be switched to Git integration later**. If Git 
 
 ## Licence and credits
 
-Site code: MIT (see `LICENSE`). Fonts: system fonts only. No third-party code or assets. Colours and feel follow the Saturday 5K Pace Planner.
+Site code: MIT (see `LICENSE`). Fonts (self-hosted, SIL OFL 1.1, licences in `public/assets/fonts/LICENSE.txt`): Barlow Condensed, Inter, IBM Plex Mono. No third-party code. Colours and feel follow the Saturday 5K Pace Planner.

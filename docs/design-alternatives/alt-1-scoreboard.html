@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>Alt 1: Scoreboard (mockup, not deployed)</title>
+<style>
+@font-face{font-family:BC;src:url(../../public/assets/fonts/barlow-condensed-800.woff2);font-weight:800}
+@font-face{font-family:IN;src:url(../../public/assets/fonts/inter-var.woff2);font-weight:400 700}
+@font-face{font-family:PM;src:url(../../public/assets/fonts/plex-mono-500.woff2);font-weight:500}
+body{margin:0;background:#07100c;color:#eef1e8;font:17px/1.55 IN,sans-serif;width:1280px;height:760px;overflow:hidden;position:relative}
+.top{display:flex;justify-content:space-between;padding:22px 64px;font:500 13px PM,monospace;letter-spacing:.1em;text-transform:uppercase;color:#a2b1a8;border-bottom:1px solid #1b2c24}
+.top b{color:#f4c430}
+.grid{display:grid;grid-template-columns:1fr 440px;gap:56px;padding:56px 64px}
+h1{font:800 104px/.9 BC,sans-serif;text-transform:uppercase;margin:0 0 24px} h1 em{font-style:normal;color:#f4c430}
+.board{border:2px solid #f4c430;border-radius:14px;padding:26px;background:#0d1b15}
+.board .row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px dashed #2a4136;padding:12px 0;font:500 14px PM,monospace;text-transform:uppercase;letter-spacing:.08em;color:#a2b1a8}
+.board .big{font:800 128px/1 BC,sans-serif;color:#f4c430;letter-spacing:.01em;margin:6px 0 2px}
+.board .row b{font:800 34px BC,sans-serif;color:#eef1e8}
+.btn{display:inline-block;background:#f4c430;color:#0d1f18;font-weight:700;padding:15px 24px;border-radius:10px;margin-right:12px}.btn.o{background:none;color:#eef1e8;border:2px solid #eef1e8;padding:13px 22px}
+p{max-width:30em;color:#d3ddd6}
+</style>
+<div class="top"><span>Sport Builds</span><span>Issue <b>01</b> · 26 Oct 2026</span></div>
+<div class="grid"><div><h1>A different<br>sports app,<br><em>vibe-coded</em><br>every week.</h1><p>One small, useful sports tool a week, built with AI in public. Prompts, bugs and fixes included.</p><span class="btn">Get the weekly build</span><span class="btn o">Browse all builds</span></div>
+<div class="board"><div class="row"><span>Latest build</span><span>Running</span></div><div class="big">23:45</div><div class="row"><span>Target 5K</span><b>57.8%</b></div><div class="row"><span>Saturday 5K Pace Planner</span><span>Open →</span></div></div></div>

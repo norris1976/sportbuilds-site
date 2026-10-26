@@ -68,7 +68,7 @@ The first preview is live at `https://sportbuilds-site.pages.dev` (direct upload
 16. `https://sportbuilds.co/`, `/archive/`, `/about/`, `/privacy/`, `/welcome/` load; `https://www.sportbuilds.co/about/` redirects 301 to `https://sportbuilds.co/about/`; `http://` redirects to https.
 17. `https://5k.sportbuilds.co` loads the planner with a valid certificate (check Vercel's Domains page shows it valid). If Vercel shows "Invalid configuration", confirm the CNAME is grey cloud and the value matches exactly.
 18. Email: send to hello@ again. Check DNS with `dig MX sportbuilds.co`, `dig TXT sportbuilds.co`.
-19. In Kit set the confirmation redirect to `https://sportbuilds.co/welcome/` and put the Kit form ID in `site.config.mjs`.
+19. The Kit form ID is already in `site.config.mjs` and Kit's confirmation redirect is `https://sportbuilds.co/welcome/`; after the domain is live, confirm both (do one real sign-up with Tim's own address and click the confirmation link).
 
 ## Risks and notes
 
