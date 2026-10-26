@@ -65,6 +65,18 @@ const checkPaths = [...seenInternal, '/favicon.svg', '/apple-touch-icon.png', '/
 for (const p of checkPaths) { const r = await api.get(base + p); if (r.status() !== 200) problems.push(`broken link ${p} -> ${r.status()}`); }
 const sm = await (await api.get(base + '/sitemap.xml')).text();
 if (/welcome/.test(sm)) problems.push('welcome page must not be in sitemap');
+if (process.env.CHECK_HEADERS === '1') {
+  for (const p of ['/', '/archive/', '/about/', '/privacy/', '/welcome/']) {
+    const h = (await api.get(base + p)).headers();
+    if (!/connect-src 'none'/.test(h['content-security-policy'] ?? '')) problems.push(`${p}: CSP header missing`);
+    if (h['x-content-type-options'] !== 'nosniff') problems.push(`${p}: nosniff missing`);
+    if (!h['referrer-policy']) problems.push(`${p}: referrer-policy missing`);
+    if (p === '/welcome/' && !/noindex/.test(h['x-robots-tag'] ?? '')) problems.push('/welcome/: X-Robots-Tag noindex missing');
+    if (p !== '/welcome/' && h['x-robots-tag']) problems.push(`${p}: unexpected X-Robots-Tag`);
+  }
+  const ah = (await api.get(base + '/assets/style.css')).headers(); log('assets cache-control:', ah['cache-control']);
+  log('security headers checked on 5 pages');
+}
 log('internal paths checked:', checkPaths.length, '| external links (not fetched):', [...externalLinks].join(', '));
 await ctx.close();
 

@@ -141,7 +141,7 @@ ${buildCard(latest, { featured: true, label: 'This week\u2019s build' })}
   <li><strong>Built with AI</strong>Vibe-coded in public: real prompts, real tests, a live demo and open source code.</li>
   <li><strong>Honest notes</strong>Every issue says what broke and how it was fixed, not just the shiny result.</li>
 </ol></section>
-${older.length ? `<section aria-labelledby="recent"><h2 id="recent">Recent builds</h2><ul class="archive">${older.slice(0, 3).map((b) => `<li>${buildCard(b)}</li>`).join('')}</ul><p style="margin-top:12px"><a href="/archive/">See the full archive</a></p></section>` : `<p class="muted small">More builds are on the way, one a week. <a href="/archive/">See the archive</a>.</p>`}
+${older.length ? `<section aria-labelledby="recent"><h2 id="recent">Recent builds</h2><ul class="archive">${older.slice(0, 3).map((b) => `<li>${buildCard(b)}</li>`).join('')}</ul><p class="more"><a href="/archive/">See the full archive</a></p></section>` : `<p class="muted small">More builds are on the way, one a week. <a href="/archive/">See the archive</a>.</p>`}
 ${signup()}
 </div>`,
 });
@@ -168,7 +168,7 @@ pages['/welcome/'] = layout({
   <h2 id="w-h">Your first build</h2>
   <h3>${esc(first.title)}</h3>
   <p>${esc(first.description)}</p>
-  <p class="links" style="justify-content:center"><a class="btn primary" href="${esc(first.url)}" rel="noopener">Open the ${esc(first.title)} <span aria-hidden="true">&rarr;</span></a></p>
+  <p class="links centered"><a class="btn primary" href="${esc(first.url)}" rel="noopener">Open the ${esc(first.title)} <span aria-hidden="true">&rarr;</span></a></p>
   ${first.fallbackUrl ? `<p class="mirror">Also at <a href="${esc(first.fallbackUrl)}" rel="noopener">${esc(host(first.fallbackUrl))}</a>.</p>` : ''}
 </section>
 <section class="card prose center" aria-labelledby="w2"><h2 id="w2">What should I build next?</h2>

@@ -61,7 +61,7 @@ Other placeholders: `CONTACT_EMAIL` (empty, shows a marked placeholder on About 
 
 ## Deploy to Cloudflare Pages
 
-Connect this GitHub repo in the Cloudflare dashboard (Workers & Pages > Create > Pages > Connect to Git) with:
+Option A (in use): direct upload, see the next section. Option B (not in use): connect this GitHub repo in the Cloudflare dashboard (Workers & Pages > Create > Pages > Connect to Git) with:
 
 | Setting | Value |
 |---|---|
@@ -74,6 +74,21 @@ Connect this GitHub repo in the Cloudflare dashboard (Workers & Pages > Create >
 
 That gives a `https://<project>.pages.dev` preview. Do the custom-domain steps in `docs/CLOUDFLARE_AND_DNS.md` separately.
 Keep Cloudflare Web Analytics switched **off** unless the privacy page is updated first.
+
+## Deploy (direct upload to Cloudflare Pages)
+
+The site is a Cloudflare Pages project named `sportbuilds-site` created with **direct upload** (no Git auto-deploy). Adding a week is: edit `data/builds.json`, commit and push, then deploy.
+
+```bash
+export CLOUDFLARE_API_TOKEN=...      # scoped token, Cloudflare Pages: Edit. Never commit it or paste it in logs
+export CLOUDFLARE_ACCOUNT_ID=...     # the Cloudflare account ID
+npm run deploy
+```
+
+`npm run deploy` runs `npm run build`, then `npm test`, then
+`npx --yes wrangler@4.86.0 pages deploy dist --project-name sportbuilds-site --branch main`. Branch `main` is the production branch, so this updates `https://sportbuilds-site.pages.dev` (and the custom domain once attached). Other branch names create preview URLs only. The first run downloads wrangler through `npx`, so it needs network access.
+
+A direct-upload project **cannot be switched to Git integration later**. If Git auto-deploy is wanted, create a new Pages project connected to the repo instead and move the custom domain across.
 
 ## Licence and credits
 

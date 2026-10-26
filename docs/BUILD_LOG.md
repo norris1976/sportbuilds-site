@@ -58,3 +58,31 @@ Raw notes written as the build happened, failures included. Times are Europe/Lon
 | 3 First build | 11:41 | 11:44 |
 | 4 to 5 Fixes and verification (incl. Lighthouse) | 11:44 | 11:48 |
 | 6 Docs, commit, push | 11:48 | 11:52 (about 13 minutes in total, clock times approximate) |
+
+## Round 2: Cloudflare Pages preview deploy (Mon 26 Oct, 12:09 to about 12:20)
+Instruction: create a Pages project `sportbuilds-site` (direct upload, production branch main), deploy to `*.pages.dev` only (no custom domain, no DNS), verify the live URL, add a deploy command to the docs, draft About and Privacy copy for Tim, commit and push. Token and account ID supplied via `CLOUDFLARE_API_TOKEN` and `/workspace/.cf_account_id`; neither is written to any file or log (wrangler output was also filtered for the account ID).
+
+What I ran (12:09 to 12:11):
+1. `npm run build`.
+2. `npx wrangler@4.86.0 pages project create sportbuilds-site --production-branch main` (about 11 s, worked first time).
+3. Added `npm run deploy` (build, tests, then `wrangler pages deploy dist --project-name sportbuilds-site --branch main`). First deploy took about 9 s: 13 files uploaded plus `_headers`.
+4. Live URL: https://sportbuilds-site.pages.dev. Each deploy also gets a hash URL; only the production alias is meant to be shared.
+
+What broke:
+1. **I broke my own shared `node_modules` link.** The repo's `node_modules` was a symlink to the box's shared Playwright install. `npm i --no-save wrangler` replaced the symlink with a real directory containing wrangler and not Playwright. Noticed from `readlink` printing nothing; restored the symlink. Deploy now uses `npx --yes wrangler@4.86.0`, so wrangler is never installed into the repo. Lesson: don't run `npm install` in a folder whose `node_modules` is a symlink.
+2. **Real bug caught only on the live URL: inline `style=""` attributes blocked by the Content Security Policy.** The `/welcome/` page's centred button used `style="justify-content:center"`, and the home page's "see the full archive" paragraph (only shown from issue 2) used another. The CSP (`style-src 'self'`) blocks inline styles, so Chrome logged a console error on the live welcome page. My local server did not send the `_headers` CSP, so the local run passed. Fixes: moved both to CSS classes; made `tools/serve.mjs` apply the `/*` block of `_headers` so local checks behave like Cloudflare; added an assertion to the test suite that built pages contain no inline `style=` attributes. After redeploy the live check was clean.
+3. A caution on my own earlier statement: the first-round check "zero console errors" was true only for a server without the real headers. Verification now runs against the real Pages URL with `CHECK_HEADERS=1`, which also asserts CSP, nosniff, referrer-policy on five pages, and `X-Robots-Tag: noindex` only on `/welcome/`.
+
+Verification on https://sportbuilds-site.pages.dev (second deploy, 12:11): all six pages at 390px and 1280px pass: HTTP 200 (404 page returns 404), no console errors or warnings, zero external requests, no overflow, security headers present, noindex header on `/welcome/` only, welcome noindex meta, form unconfigured behaviour (no POST). Asset cache header is `public, max-age=3600`; pages are `max-age=0, must-revalidate`. Screenshots: `docs/screenshots/*-pagesdev.png`.
+
+Notes:
+- Canonical and Open Graph URLs on the preview still point at `https://sportbuilds.co` (not live yet). Expected.
+- No custom domain attached, no DNS touched; the token has no zone access anyway.
+- `wrangler` printed "update available 4.152.0"; pinned at 4.86.0 for repeatability. Update the pin deliberately when wanted.
+- Draft About and Privacy copy is in `docs/DRAFT_COPY.md` and is not used by the site.
+
+| Step | Start | End |
+|---|---|---|
+| Rebuild, project create, first deploy | 12:09 | 12:10 |
+| Live verification, CSP bug found, fix, redeploy | 12:10 | 12:12 |
+| Docs, draft copy, commit, push | 12:12 | see git log |

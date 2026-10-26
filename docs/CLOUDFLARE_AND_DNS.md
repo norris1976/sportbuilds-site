@@ -6,6 +6,25 @@ Nothing in this file has been done. The build agent had no Cloudflare access and
 
 The plan (move nameservers to Cloudflare, Cloudflare Email Routing for hello@, `5k` CNAME to Vercel set to DNS only) is sound, and Cloudflare requires the nameserver move for a Pages apex domain. The order matters, and there are a few extra things to check.
 
+## Deploy (direct upload to Cloudflare Pages)
+
+The site is a Cloudflare Pages project named `sportbuilds-site` created with **direct upload** (no Git auto-deploy). Adding a week is: edit `data/builds.json`, commit and push, then deploy.
+
+```bash
+export CLOUDFLARE_API_TOKEN=...      # scoped token, Cloudflare Pages: Edit. Never commit it or paste it in logs
+export CLOUDFLARE_ACCOUNT_ID=...     # the Cloudflare account ID
+npm run deploy
+```
+
+`npm run deploy` runs `npm run build`, then `npm test`, then
+`npx --yes wrangler@4.86.0 pages deploy dist --project-name sportbuilds-site --branch main`. Branch `main` is the production branch, so this updates `https://sportbuilds-site.pages.dev` (and the custom domain once attached). Other branch names create preview URLs only. The first run downloads wrangler through `npx`, so it needs network access.
+
+A direct-upload project **cannot be switched to Git integration later**. If Git auto-deploy is wanted, create a new Pages project connected to the repo instead and move the custom domain across.
+
+The first preview is live at `https://sportbuilds-site.pages.dev` (direct upload, no custom domain attached).
+
+**Note on step 3 (section B) below:** the Pages project already exists as direct upload, so skip the "connect to Git" instruction; go straight to the zone steps (C onwards). The token Tim supplied has no zone access, so DNS and the custom domain still have to be done by Tim in the dashboard.
+
 ## Ordered steps (Tim)
 
 **A. Before touching anything**

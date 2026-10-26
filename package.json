@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "node test/run.mjs",
-    "serve": "node tools/serve.mjs dist 5174"
+    "serve": "node tools/serve.mjs dist 5174",
+    "deploy": "npm run build && npm test && npx --yes wrangler@4.86.0 pages deploy dist --project-name sportbuilds-site --branch main --commit-dirty=true"
   },
   "license": "MIT"
 }

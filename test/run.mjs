@@ -87,6 +87,7 @@ t('built pages make no external references except outbound <a> links', () => {
   for (const p of ['index.html', 'archive/index.html', 'welcome/index.html', 'about/index.html', 'privacy/index.html', '404.html']) {
     const html = r.read(p);
     assert.doesNotMatch(html, /<(script|link|img|iframe)[^>]+(src|href)="https?:\/\/(?!sportbuilds\.co)/, p + ' loads an external resource');
+    assert.doesNotMatch(html, /\sstyle="/, p + ' has an inline style attribute (blocked by CSP)');
     assert.doesNotMatch(html, /<script(?![^>]*src=)/, p + ' has an inline script');
   }
 });

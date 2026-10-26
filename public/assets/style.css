@@ -95,3 +95,5 @@ input[type=text], input[type=email] { font:inherit; font-size:16px; /* 16px stop
 .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 .build h2, .build h3 { text-transform:none; letter-spacing:0; color:var(--ink); font-size:20px; line-height:1.25; margin:0 0 6px; }
 .card.prose.center { justify-self:center; width:100%; }
+.links.centered { justify-content:center; }
+.more { margin-top:12px; }
