@@ -1,6 +1,21 @@
 # Cloudflare Pages + DNS plan for sportbuilds.co
 
-Nothing in this file has been done. The build agent had no Cloudflare access and was told not to change DNS or registrar settings.
+## Status (updated Mon 26 Oct 2026, Europe/London)
+
+| Item | State |
+|---|---|
+| Zone `sportbuilds.co` on Cloudflare (Free) | Done, active. Nameservers `ajay.ns.cloudflare.com` and `robin.ns.cloudflare.com` set at Namecheap. DNSSEC was off. |
+| Records recreated from Namecheap | Done: `5k`, Kit sender records (`cka._domainkey`, `cka2._domainkey`, `ckespa` CNAMEs), `_dmarc` TXT, SPF TXT, and the five `eforward1..5.registrar-servers.com` MX records. |
+| hello@ email forwarding | Still Namecheap Email Forwarding (its MX and SPF records are imported into Cloudflare DNS, DNS-only). Cloudflare Email Routing is NOT used. Do not enable it without deleting the eforward MX records. Test with a mail to hello@ from another account after any DNS change. |
+| Main site on Pages (`sportbuilds-site`) | Done. Apex `sportbuilds.co` attached and active; proxied apex CNAME to `sportbuilds-site.pages.dev` added via API (the API does not create it automatically). `/`, `/archive/`, `/about/`, `/privacy/`, `/welcome/` return 200. |
+| `5k.sportbuilds.co` planner | Moved from Vercel to Cloudflare Pages project `saturday-5k-pace-planner`. The `5k` record is now a **proxied** CNAME to `saturday-5k-pace-planner.pages.dev` (the old "must stay DNS-only" note below applied to Vercel only and no longer holds). Domain removed from the Vercel project; the Vercel project and its `vercel.app` URL remain. |
+| `www` | Proxied `A www 192.0.2.1` exists. The 301 redirect rule `https://www.sportbuilds.co/*` to `https://sportbuilds.co/${1}` is NOT created: the API token lacks permission for redirect rulesets (needs Zone > Single Redirect (Dynamic URL Redirects) > Edit). Until the rule exists, `www` does not serve anything useful. Add it in the dashboard (Rules > Redirect Rules) or widen the token. |
+| Always Use HTTPS, SSL mode | Not checked: the token cannot read zone settings (needs Zone > Zone Settings > Edit). Do this in the dashboard. |
+| Web Analytics beacon | Cloudflare injects it into HTML on proxied hostnames. Both sites send `Cache-Control: no-transform`, which stops it. Also switch Web Analytics off for the zone in the dashboard if it is on. |
+| Kit confirmation redirect | Should be `https://sportbuilds.co/welcome/`; re-test with a real sign-up now that the domain is live. |
+
+The sections below are the original plan, kept for reference. Where they conflict with the status above, the status wins.
+
 
 ## Verdict on the plan
 
@@ -25,7 +40,7 @@ The first preview is live at `https://sportbuilds-site.pages.dev` (direct upload
 
 **Note on step 3 (section B) below:** the Pages project already exists as direct upload, so skip the "connect to Git" instruction; go straight to the zone steps (C onwards). The token Tim supplied has no zone access, so DNS and the custom domain still have to be done by Tim in the dashboard.
 
-## Ordered steps (Tim)
+## Ordered steps (original plan; mostly done, see status)
 
 **A. Before touching anything**
 1. At Namecheap, open Domain List > sportbuilds.co > Advanced DNS. Write down or screenshot **every** record (host, type, value, TTL) and what "Email forwarding" currently says (which hello@ goes where). Note whether the nameservers are "Namecheap BasicDNS" and whether DNSSEC is switched on (if it is, turn it off before changing nameservers).
@@ -78,6 +93,6 @@ The first preview is live at `https://sportbuilds-site.pages.dev` (direct upload
 - **Missed records** (SPF, DKIM, Kit domain verification, site verification TXT) silently break email deliverability. Compare the final Cloudflare list with the step-1 screenshot.
 - **DNSSEC** if enabled at Namecheap will make the domain fail to resolve after the move unless disabled first.
 - **Pages vs Workers.** Cloudflare is steering new projects towards Workers with static assets; Pages still works and the site is plain static files, so the build output can move later with no code change.
-- **Vercel Hobby and the planner.** `5k.sportbuilds.co` (the planner) is still on Vercel Hobby, which is for non-commercial use. If sponsorship, ads or any monetisation appears on or around the planner (including a "sponsored by" line or sponsor links), it may need to move to Vercel Pro or to Cloudflare Pages, too. The planner is static, so moving it is easy (same CNAME approach, then repoint `5k` to its Pages project). Decide before the first sponsored issue. Cloudflare's own terms should also be checked for Tim's exact monetisation plans.
+- **Vercel Hobby and the planner.** Resolved: the planner now runs on Cloudflare Pages. Cloudflare's own terms should still be checked for Tim's exact monetisation plans.
 - **Privacy page.** It says the site sets no cookies and has no analytics. Keep that true: leave Cloudflare Web Analytics off, add no tracking scripts, and update the page before changing either.
 - **Welcome page** is noindex and not in the sitemap, but it is a public URL; anyone can open it. It contains nothing private.
