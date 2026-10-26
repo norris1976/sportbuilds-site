@@ -38,3 +38,22 @@ for k in 'abc':
     tile=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Sport Builds"><title>Sport Builds</title><rect width="100" height="100" rx="22" fill="{GREEN}"/><g transform="translate(14 14) scale(.72)">{MARKS[k]("#ffffff",GOLD)}</g></svg>\n'
     open(f'docs/logo-options/option-{k}-mark.svg','w').write(tile)
 print('ok')
+
+# ---- FINAL logo: option B "Track", recoloured with NO green. Near-black ink tile, off-white track, gold baton.
+INK, PAPER = '#0c0c0b', '#f4f1e8'
+ff,txt,trk,_ = WORD['b']
+d,w,cap = text_path(ff,txt,34,trk)
+H=40; wordx=H+10; ybase=H/2+cap/2; W=wordx+w; ms=H/100
+def lockup(track, word, cc=False):
+    fill = 'fill="currentColor"' if cc else ''
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.1f} {H}" role="img" aria-label="Sport Builds" {fill}><title>Sport Builds</title>'
+            f'<g transform="scale({ms})">{MARKS["b"](track,GOLD)}</g><path transform="translate({wordx} {ybase:.2f})" fill="{word}" d="{d}"/></svg>\n')
+# currentColor lockup: used by the site header (ink follows the theme text colour), gold baton fixed
+open('docs/logo-options/option-b-final.svg','w').write(lockup('currentColor','currentColor',True))
+open('docs/logo-options/option-b-final-dark.svg','w').write(lockup(PAPER,PAPER))   # for dark backgrounds
+open('docs/logo-options/option-b-final-light.svg','w').write(lockup(INK,INK))      # for light backgrounds
+# tile (favicon, touch icon): near-black tile, off-white track, gold baton
+open('docs/logo-options/option-b-final-mark.svg','w').write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Sport Builds"><title>Sport Builds</title><rect width="100" height="100" rx="22" fill="{INK}"/><g transform="translate(14 14) scale(.72)">{MARKS["b"](PAPER,GOLD)}</g></svg>\n')
+# light-background mark (no tile): near-black track, gold baton
+open('docs/logo-options/option-b-final-mark-light.svg','w').write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Sport Builds"><title>Sport Builds</title>{MARKS["b"](INK,GOLD)}</svg>\n')
+print('final ok')

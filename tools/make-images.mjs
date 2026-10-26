@@ -12,10 +12,10 @@ const face = `@font-face{font-family:BC;src:url(file://${fonts}/barlow-condensed
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/usr/bin/google-chrome', args: ['--no-sandbox', '--allow-file-access-from-files'] });
 {
   writeFileSync('/tmp/og.html', `<!doctype html><meta charset=utf-8><style>${face}
-body{margin:0;width:1200px;height:630px;background:#0b3d2e;color:#f4f1e8;font-family:IN,sans-serif;display:flex;flex-direction:column;justify-content:center;padding:0 84px;box-sizing:border-box;position:relative;overflow:hidden}
-body::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(244,241,232,.07) 1px,transparent 1px);background-size:100% 42px}
+body{margin:0;width:1200px;height:630px;background:#0c0c0b;color:#f4f1e8;font-family:IN,sans-serif;display:flex;flex-direction:column;justify-content:center;padding:0 84px;box-sizing:border-box;position:relative;overflow:hidden}
+body::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(244,241,232,.06) 1px,transparent 1px);background-size:100% 42px}
 .l{color:#f4f1e8;position:relative;margin-bottom:44px} h1{position:relative;margin:0;font:800 112px/1.02 BC,sans-serif;text-transform:uppercase;max-width:1000px}
-.hl{white-space:nowrap;background:#f4c430;color:#0d1f18;padding:0 14px} p{position:relative;margin:34px 0 0;font-size:30px;color:#cfe0d6}</style>
+.hl{white-space:nowrap;background:#f4c430;color:#131311;padding:0 14px} p{position:relative;margin:34px 0 0;font-size:30px;color:#b9b6ab}</style>
 <div class=l>${lockup}</div><h1>A different sports app, <span class=hl>vibe-coded</span> every week.</h1><p>Honest build notes · sportbuilds.co</p>`);
   const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
   await page.goto('file:///tmp/og.html'); await page.evaluate(() => document.fonts.ready); await page.screenshot({ path: 'public/assets/og.png' }); await page.close();

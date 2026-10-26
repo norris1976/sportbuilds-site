@@ -116,8 +116,8 @@ t('design: every <img> has alt text, width and height; WebP files are small', ()
 
 t('design: logo comes from LOGO_OPTION (header lockup + favicon), one-line swap', () => {
   const home = buildCopy(() => {}).read('index.html'); assert.match(home, /<a class="brand"[^>]*aria-label="Sport Builds, home"><svg[^>]*aria-hidden="true"/);
-  for (const k of ['a', 'b', 'c']) {
-    const r = buildCopy((dir) => { const p = join(dir, 'site.config.mjs'); writeFileSync(p, readFileSync(p, 'utf8').replace(/LOGO_OPTION = '\w'/, `LOGO_OPTION = '${k}'`)); });
+  for (const k of ['a', 'b', 'c', 'b-final']) {
+    const r = buildCopy((dir) => { const p = join(dir, 'site.config.mjs'); writeFileSync(p, readFileSync(p, 'utf8').replace(/LOGO_OPTION = '[\w-]+'/, `LOGO_OPTION = '${k}'`)); });
     assert.equal(r.read('favicon.svg'), readFileSync(`docs/logo-options/option-${k}-mark.svg`, 'utf8')); assert.match(r.read('index.html'), new RegExp('<svg[^>]*class="logo"'));
   }
 });
@@ -132,6 +132,17 @@ t('design: colour tokens meet WCAG AA (4.5:1 text, 3:1 for the accent focus/fill
   const pairs = [['ink', 'paper'], ['muted', 'paper'], ['muted', 'card'], ['ink', 'card'], ['link', 'paper'], ['eyebrow', 'paper'], ['on-accent', 'accent'], ['on-band', 'band'], ['on-band-muted', 'band'], ['accent', 'band'], ['ok', 'band'], ['bad', 'band'], ['warn', 'paper']];
   for (const [name, th] of [['light', light], ['dark', dark]]) for (const [f, b] of pairs) assert.ok(ratio(th[f], th[b]) >= 4.5, `${name}: ${f} on ${b} = ${ratio(th[f], th[b]).toFixed(2)}`);
   for (const [name, th] of [['light', light], ['dark', dark]]) assert.ok(ratio(th.focus, th.paper) >= 3, name + ' focus ring contrast');
+});
+
+t('design: final palette has no green (css, svg logos used by the site, images config)', () => {
+  const css = readFileSync('public/assets/style.css', 'utf8');
+  const hexes = [...new Set([...css.matchAll(/#([0-9a-fA-F]{6})\b/g)].map((m) => m[1].toLowerCase()))];
+  const hsl = (h) => { const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return [0, 0, mx]; let hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(hh * 60 + 360) % 360, d / (1 - Math.abs(mx + mn - 1)), (mx + mn) / 2]; };
+  for (const h of hexes) { const [hue, sat, l] = hsl(h); assert.ok(!(hue > 70 && hue < 190 && sat > 0.08 && l > 0.03), `green-ish colour #${h} in style.css`); }
+  for (const f of ['option-b-final', 'option-b-final-mark', 'option-b-final-dark', 'option-b-final-light', 'option-b-final-mark-light']) {
+    const svg = readFileSync(`docs/logo-options/${f}.svg`, 'utf8'); assert.doesNotMatch(svg, /0b3d2e|14604a/i, f + ' must not use the old green');
+  }
+  assert.match(readFileSync('site.config.mjs', 'utf8'), /LOGO_OPTION = 'b-final'/);
 });
 
 t('welcome is noindex and not in the sitemap; others are indexable', () => {

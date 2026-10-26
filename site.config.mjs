@@ -31,4 +31,4 @@ export const WELCOME_ISSUE = 1;
 // PROVISIONAL logo. 'a' (Stack), 'b' (Track) or 'c' (Brackets); see docs/logo-options/preview-sheet.png.
 // Swapping the logo is this one line: the header lockup and favicon are both built from docs/logo-options/option-<x>*.svg.
 // (Also re-run `node tools/make-images.mjs` to refresh the social image and touch icon.)
-export const LOGO_OPTION = 'b';
+export const LOGO_OPTION = 'b-final';

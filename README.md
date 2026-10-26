@@ -12,7 +12,7 @@ Each week's tool lives on its **own subdomain** (issue 1 is `5k.sportbuilds.co`)
 
 ```bash
 npm run build     # writes dist/
-npm test          # 15 tests: data validation, design tokens (WCAG AA), fonts/CSP, add-a-week, Kit wiring, noindex, forbidden-content guard
+npm test          # 16 tests: data validation, design tokens (WCAG AA), fonts/CSP, add-a-week, Kit wiring, noindex, forbidden-content guard
 npm run serve     # http://localhost:5174 (mimics Cloudflare Pages: /about/ -> about/index.html, custom 404)
 ```
 
@@ -63,9 +63,9 @@ Kit settings (done by the Editor): double opt-in on, confirmation email from hel
 Other placeholders still marked in the pages: About page bio and photo, full privacy policy (draft in `docs/DRAFT_COPY.md`, not live until Tim approves). Search the repo for `PLACEHOLDER` and `TODO(`.
 
 ## Design and logo
-- Design system lives in `public/assets/style.css` (tokens at the top, light and dark; one gold accent used only as a fill behind dark text so it passes AA in both). Motion is wrapped in `prefers-reduced-motion: no-preference`.
-- Provisional logo: option B from `docs/logo-options/`. To swap, change the single `LOGO_OPTION` line in `site.config.mjs` ('a', 'b' or 'c'), then run `node tools/make-images.mjs` to refresh the OG image and touch icon. Favicon and header lockup are generated at build time.
-- `node tools/fullpage.mjs <baseUrl> <outDir>` takes full-page screenshots of the five pages at 1280 and 390. `node tools/logo-sheet.mjs` re-renders the logo preview sheet; `/workspace/fv/bin/python tools/make-logos.py` regenerates the logo SVGs (needs fontTools; text is converted to paths).
+- Design system lives in `public/assets/style.css` (tokens at the top; dark-first near-black + off-white + gold scoreboard look, with a warm off-white light theme; no green anywhere, guarded by a test; gold is used only as a fill behind dark text on light, or as text on dark, so it passes AA). Motion is wrapped in `prefers-reduced-motion: no-preference`.
+- Final logo: option B "Track", recoloured with no green (`option-b-final*.svg`; near-black tile, off-white track, gold baton; `-dark`/`-light` lockups and a `-mark-light` for other uses). To swap, change the single `LOGO_OPTION` line in `site.config.mjs` ('b-final', or the older 'a', 'b', 'c'), then run `node tools/make-images.mjs` to refresh the OG image and touch icon. Favicon and header lockup are generated at build time.
+- `node tools/fullpage.mjs <baseUrl> <outDir> [suffix] [--theme=dark|light] [--themes]` takes full-page screenshots of the five pages at 1280 and 390 (dark by default; `--themes` adds home in dark and light). `node tools/logo-final-sheet.mjs` renders the final logo preview. `node tools/logo-sheet.mjs` re-renders the logo preview sheet; `/workspace/fv/bin/python tools/make-logos.py` regenerates the logo SVGs (needs fontTools; text is converted to paths).
 - Unused hero directions: `docs/design-alternatives/`.
 
 ## Deploy to Cloudflare Pages
