@@ -159,3 +159,17 @@ Fix:
 - Verification, live (new deployment 72d5d7d5, 15 s): HTML 200 with must-revalidate; hashed assets 200 with immutable; fresh Chrome profile and a warm-cache second load, dark and light: near-black `rgb(12,12,11)` / warm off-white `rgb(245,242,234)`, 0 green elements outside images, 0 external requests, 0 console issues; `verify.mjs` and the 7 Kit-form scenarios pass.
 - Stale-cache simulation (local server, one Chrome profile, same origin): visited the old green build (CSS cached for 3600 s, body `rgb(9,19,15)`), swapped to the new build at the same address, reloaded: the page requested the new hashed CSS and showed `rgb(12,12,11)`.
 - Note for anyone testing: the first load after this deploy needs no hard refresh; later deploys will not need one either.
+
+## Round 6: Kit live test and neutral planner screenshots (Mon 26 Oct, about 13:10 to 13:50 Europe/London)
+### A) Kit end-to-end test (one real sign-up, address supplied by Tim)
+- Submitted `norris1976+testingsportsbuild@gmail.com`, first name "Test", through the live preview form in headless Chrome. Kit answered HTTP 200 with `status: "quarantined"` and a `https://app.kit.com/forms/guards/<id>` URL, not `success`.
+- Meaning: Kit's spam guard holds the sign-up until the person passes a reCAPTCHA on a Kit page. Kit's own embed script sends a reCAPTCHA token with the form; ours deliberately does not (no third-party scripts, strict CSP), so Kit quarantines it. No confirmation email is sent until the check is passed.
+- **Bug found:** `public/assets/subscribe.js` treated `quarantined` like `success` and told the visitor "Check your inbox", which was untrue. Fixed: on `quarantined` the form now says "One more step: Kit needs a quick security check before it can send your confirmation email" with a link to Kit's guard URL (only if it starts with `https://app.kit.com/`). Added `host` and `ckjs_version` (the non-personal fields Kit's embed also sends) to the POST. New scenario in `tools/verify-kit-form.mjs`; 8 scenarios pass with Kit mocked.
+- One retest with the same address after the fix (as approved): Kit still quarantined it, so the extra fields do not change the outcome. Open decision for Tim: accept the extra "security check" click for visitors, or allow Kit's own script and `frame-src`/`script-src` for `app.kit.com`/recaptcha in the CSP (more third-party code), or ask Kit support whether the guard can be relaxed for this form. I did not complete the reCAPTCHA myself.
+- Gmail (read-only): no email to the test address arrived (consistent with the quarantine). The Kit connector needs a paid Kit plan, so the subscriber record could not be checked.
+- Screenshots: `docs/screenshots/kit-live/`.
+
+### B) Neutral planner
+- Restyled the planner itself (colour tokens in `style.css`, share-card canvas, theme-color, favicon): near-black header with gold rule, warm off-white and near-black themes, gold accent, no green. Logic and 22 tests untouched. Redeployed to Vercel production; `tools/check-theme.mjs` in the planner repo checks AA contrast (worst 6.06 light, 7.26 dark) and zero green pixels.
+- New `tools/make-planner-shots.mjs` re-takes the three site images from the live planner with example data (the build asserts zero green pixels) and rewrote their alt text to say "example". Copies in `docs/screenshots/planner-neutral/`.
+- Broke: the first desktop shot caught a gold focus ring on the Age field; now blurred before the shot. The theme checker first flagged hero text because it ignored the gradient background; fixed in the checker.

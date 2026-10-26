@@ -19,19 +19,19 @@
         "src": "/assets/img/5k-desktop.webp",
         "width": 720,
         "height": 720,
-        "alt": "The Saturday 5K Pace Planner on a desktop screen: a form asking for a PB, target time, age and age-grading category, with a Plan my 5K button."
+        "alt": "The Saturday 5K Pace Planner on a desktop screen, near-black header with gold accents: a form asking for a PB, target time, age and age-grading category, filled with example times and a Plan my 5K button."
       },
       "phone": {
         "src": "/assets/img/5k-phone-result.webp",
         "width": 480,
         "height": 923,
-        "alt": "The Saturday 5K Pace Planner on a phone: a 57.8% age grade for a 23:45 target and a table of five per-kilometre splits."
+        "alt": "The Saturday 5K Pace Planner on a phone, showing example results: a 57.8% age grade for a 23:45 target and a table of five per-kilometre splits."
       },
       "phoneForm": {
         "src": "/assets/img/5k-phone-form.webp",
         "width": 480,
         "height": 923,
-        "alt": "The Saturday 5K Pace Planner on a phone showing the start of its form: PB time, target time, age and category."
+        "alt": "The Saturday 5K Pace Planner on a phone showing the start of its form with example values: PB time, target time, age and category."
       }
     }
   }
