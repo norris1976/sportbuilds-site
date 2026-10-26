@@ -233,27 +233,54 @@ pages['/about/'] = layout({
 sitemap.push('/about/');
 
 // ── Privacy ─────────────────────────────────────────────────────────────
+// Real privacy page (first person, plain English). Facts checked on 26 Oct 2026: the built HTML has one same-origin script and no cookies;
+// CSP script-src 'self'; the planner's code has no fetch/XHR/beacon/storage/cookies (connect-src 'none'); Kit's and Cloudflare's policy pages return 200.
+const PRIVACY_UPDATED = '26 October 2026';
 pages['/privacy/'] = layout({
   path: '/privacy/', title: 'Privacy',
-  description: 'How Sport Builds handles your data. Placeholder: full policy to follow.',
+  description: 'How Sport Builds handles your data: what the website, the newsletter signup and the tools collect, who processes it, and how to contact me.',
   hero: hero('Privacy', 'Privacy', '', '', true),
-  body: `<div class="wrap stack"><section class="card prose" aria-labelledby="p1">
-  <p class="placeholder" role="note">PLACEHOLDER: this is a short summary, not a finished privacy policy. A full policy will be published before launch.</p>
-  <h2 id="p1">This website</h2>
+  body: `<div class="wrap stack"><section class="card prose" aria-labelledby="p0">
+  <p id="p0">Sport Builds is a free weekly newsletter that I, Tim Norris, run as an individual. I decide how your data is used, so I am the &ldquo;controller&rdquo; under UK data protection law. This page says what happens to your data, in plain English.</p>
+  <p class="muted small">Last updated: ${PRIVACY_UPDATED}</p>
+  <h2>The short version</h2>
   <ul>
-    <li>This site sets no cookies and does not add analytics or tracking scripts of its own.</li>
-    <li>It loads no third-party scripts, fonts or images.</li>
-    <li>The site is served by Cloudflare (Cloudflare Pages). Cloudflare handles your request and may keep technical logs, and may collect traffic statistics or security data (such as your IP address, browser type and the page requested) to deliver, protect and measure the service. This is handled under <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare&rsquo;s own privacy policy</a>, and we may use Cloudflare&rsquo;s aggregate figures to see how many people visit.</li>
+    <li>I collect your first name and email address only if you subscribe.</li>
+    <li>This website sets no cookies and runs no analytics or tracking scripts of its own.</li>
+    <li>I don&rsquo;t sell your data and I don&rsquo;t give it to sponsors.</li>
+    <li>You can unsubscribe at any time, and ask me to delete your details.</li>
   </ul>
-  <h2>Subscribing</h2>
+  <h2>This website</h2>
   <ul>
-    <li>If you subscribe, your first name and email address are sent to Kit, the email service used to run the newsletter, and are handled there under Kit&rsquo;s own terms and privacy policy.</li>
-    <li>This site does not store your name or email address itself.</li>
+    <li>It sets no cookies and runs no analytics or tracking scripts of its own. Its scripts, fonts and images all come from sportbuilds.co itself.</li>
+    <li>It is hosted on Cloudflare Pages. Cloudflare handles each request and keeps standard technical logs, and may collect aggregate traffic and security data (such as your IP address, browser type and the page requested). That is covered by <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare&rsquo;s privacy policy</a>. I may use Cloudflare&rsquo;s aggregate figures to see how many people visit.</li>
+  </ul>
+  <h2>Subscribing to the newsletter</h2>
+  <ul>
+    <li>I ask for your first name and email address. When you press subscribe, your browser sends them straight to Kit, the email service I use to run the newsletter. This website does not store them.</li>
+    <li>Kit handles your details on my behalf, under <a href="https://kit.com/privacy" rel="noopener">Kit&rsquo;s privacy policy</a> and its terms. Kit may record whether you open my emails and click links in them.</li>
+    <li>Signing up is double opt-in: Kit sends you one email asking you to confirm, and you only join the list once you do. Subscribing and confirming is how you give your consent. After that you get the weekly newsletter.</li>
+    <li>Every email has an unsubscribe link. Withdrawing consent is as easy as that.</li>
+    <li>Kit is based in the United States, so your details are processed there. Kit says it relies on the EU-U.S. Data Privacy Framework and its UK Extension and, where needed, standard contractual clauses with the UK addendum.</li>
+    <li>I keep your subscriber details until you unsubscribe. If you want them deleted, email me and I will delete them.</li>
   </ul>
   <h2>The tools</h2>
-  <p>Each weekly tool is a separate website with its own address. The tools are built to work on what you type into them; each one says what it does with your input.</p>
+  <p>Each weekly tool is a separate website with its own address, and each one should say what it does with your input.</p>
+  <ul>
+    <li><strong>Saturday 5K Pace Planner</strong> (5k.sportbuilds.co) works entirely in your browser. What you type is not sent to me or to anyone else. It has no analytics, sets no cookies, saves nothing on your device between visits, and loads nothing from other websites.</li>
+    <li>If you press &ldquo;Copy as text&rdquo; the result goes to your clipboard, and &ldquo;Download PNG card&rdquo; saves an image to your device. Both happen only when you press them.</li>
+  </ul>
+  <h2>Emailing me</h2>
+  <p>Messages to hello@sportbuilds.co are forwarded by Cloudflare Email Routing to my personal mailbox. I use them only to reply to you.</p>
+  <h2>Sponsors</h2>
+  <p>I don&rsquo;t sell your data, and I don&rsquo;t share it with sponsors.</p>
+  <h2>Your rights</h2>
+  <p>Under UK data protection law you can ask me for a copy of your data, ask me to correct it or delete it, object to how I use it, ask me to restrict it, and withdraw your consent at any time. To do any of these, email me at ${contact}.</p>
+  <p>If you are unhappy with how I have handled your data, I would like the chance to put it right first. You can also complain to the Information Commissioner&rsquo;s Office (ICO) at <a href="https://ico.org.uk/make-a-complaint/" rel="noopener">ico.org.uk/make-a-complaint</a>.</p>
+  <h2>Changes</h2>
+  <p>If I change this page, I will update the date at the top.</p>
   <h2>Contact</h2>
-  <p>${contact}</p>
+  <p>Tim Norris, ${contact}</p>
 </section></div>`,
 });
 sitemap.push('/privacy/');
