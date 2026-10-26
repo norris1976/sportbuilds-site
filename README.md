@@ -38,7 +38,7 @@ Add one object to `data/builds.json` and push. The archive, the home page ("This
 ```
 
 - `issue` is unique; the highest issue number is treated as the latest. Order in the file does not matter.
-- `url` is the canonical link (the tool's own subdomain). Optional `fallbackUrl` shows an "Also available at" line, handy while DNS or a certificate is still settling. Remove it once not needed (issue 1 currently has the `vercel.app` alias).
+- `url` is the canonical link (the tool's own subdomain). Optional `fallbackUrl` shows an "Also available at" line, handy while DNS or a certificate is still settling. Remove it once not needed (issue 1 no longer needs one; the planner's Vercel alias `saturday-5k-pace-planner.vercel.app` still works as an alternate).
 - `/welcome/` always shows issue `WELCOME_ISSUE` (set in `site.config.mjs`, currently 1) as "your first build".
 
 ## Subscribe form (Kit)

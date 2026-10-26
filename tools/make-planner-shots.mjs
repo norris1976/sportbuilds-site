@@ -2,7 +2,7 @@
 // Usage: node tools/make-planner-shots.mjs [plannerUrl]   -> public/assets/img/5k-*.webp (needs python3 + Pillow for the WebP step)
 import { chromium } from 'playwright-core';
 import { execFileSync } from 'node:child_process';
-const url = process.argv[2] ?? 'https://saturday-5k-pace-planner.vercel.app/';
+const url = process.argv[2] ?? 'https://5k.sportbuilds.co/';
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const out = 'public/assets/img'; const tmp = '/tmp/planner-shots';
 execFileSync('mkdir', ['-p', tmp]);
