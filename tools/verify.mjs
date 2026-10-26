@@ -47,7 +47,7 @@ for (const [vpName, vp, mobile] of [['390', { width: 390, height: 844 }, true], 
     if (info.desc.length < (name === '404' ? 20 : 40) || info.desc.length > 200) errs.push('description length ' + info.desc.length);
     if (['welcome', '404'].includes(name)) { if (!/noindex/.test(info.robots)) errs.push('missing noindex'); }
     else { if (!info.canonical.startsWith('https://')) errs.push('canonical missing'); if (/noindex/.test(info.robots)) errs.push('unexpected noindex'); }
-    if (!info.ogImage.endsWith('/assets/og.png')) errs.push('og:image missing');
+    if (!/\/assets\/og\.[0-9a-f]{10}\.png$/.test(info.ogImage)) errs.push('og:image missing');
     if (external.length) errs.push('EXTERNAL REQUESTS: ' + external.join(', '));
     for (const h of info.links) { if (h.startsWith('/')) seenInternal.add(h.split('#')[0] || '/'); else if (/^https?:/.test(h)) externalLinks.add(h); }
     if (name !== '404') await page.screenshot({ path: `${out}/${name}-${vpName}-${tag}.png`, fullPage: true });
@@ -61,7 +61,11 @@ for (const [vpName, vp, mobile] of [['390', { width: 390, height: 844 }, true], 
 
 // internal links and assets resolve
 const ctx = await browser.newContext(); const api = ctx.request;
-const checkPaths = [...seenInternal, '/favicon.svg', '/apple-touch-icon.png', '/assets/og.png', '/assets/style.css', '/assets/subscribe.js', '/sitemap.xml', '/robots.txt'];
+const homeHtml = await (await api.get(base + '/')).text();
+const assetPaths = [...new Set([...homeHtml.matchAll(/\/assets\/[^"'()\s]+/g)].map((m) => m[0]))];
+for (const a of assetPaths) if (!/\.[0-9a-f]{10}\.[a-z0-9]+$/.test(a)) problems.push('asset URL without content hash: ' + a);
+if (!assetPaths.some((a) => /style\.[0-9a-f]{10}\.css$/.test(a))) problems.push('no fingerprinted stylesheet linked');
+const checkPaths = [...seenInternal, ...assetPaths, '/sitemap.xml', '/robots.txt'];
 for (const p of checkPaths) { const r = await api.get(base + p); if (r.status() !== 200) problems.push(`broken link ${p} -> ${r.status()}`); }
 const sm = await (await api.get(base + '/sitemap.xml')).text();
 if (/welcome/.test(sm)) problems.push('welcome page must not be in sitemap');
@@ -74,7 +78,9 @@ if (process.env.CHECK_HEADERS === '1') {
     if (p === '/welcome/' && !/noindex/.test(h['x-robots-tag'] ?? '')) problems.push('/welcome/: X-Robots-Tag noindex missing');
     if (p !== '/welcome/' && h['x-robots-tag']) problems.push(`${p}: unexpected X-Robots-Tag`);
   }
-  const ah = (await api.get(base + '/assets/style.css')).headers(); log('assets cache-control:', ah['cache-control']);
+  for (const a of assetPaths) { const cc = (await api.get(base + a)).headers()['cache-control'] ?? ''; if (!/max-age=31536000/.test(cc) || !/immutable/.test(cc)) problems.push(`${a}: expected immutable long cache, got "${cc}"`); }
+  for (const p of ['/', '/archive/', '/about/', '/privacy/', '/welcome/', '/sitemap.xml']) { const cc = (await api.get(base + p)).headers()['cache-control'] ?? ''; if (!/must-revalidate|no-cache|max-age=0/.test(cc)) problems.push(`${p}: HTML/XML must revalidate, got "${cc}"`); }
+  log('cache headers checked: ' + assetPaths.length + ' hashed assets immutable; pages revalidate');
   log('security headers checked on 5 pages');
 }
 log('internal paths checked:', checkPaths.length, '| external links (not fetched):', [...externalLinks].join(', '));

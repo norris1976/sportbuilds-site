@@ -102,7 +102,7 @@ t('design: fonts self-hosted with licence, preloaded, no external font/CSS reque
   const faces = [...css.matchAll(/url\((\/assets\/fonts\/[^)]+\.woff2)\)/g)].map((m) => m[1]);
   assert.ok(faces.length >= 3, 'three font files'); for (const f of faces) assert.ok(statSync('public' + f).size > 5000, f);
   assert.doesNotMatch(css, /url\(\s*['"]?https?:|@import/i); assert.match(readFileSync('public/assets/fonts/LICENSE.txt', 'utf8'), /SIL OPEN FONT LICENSE Version 1\.1/i);
-  assert.match(home, /rel="preload"[^>]+inter-var\.woff2[^>]+crossorigin/);
+  assert.match(home, /rel="preload"[^>]+inter-var\.[0-9a-f]{10}\.woff2[^>]+crossorigin/);
   assert.match(css, /prefers-reduced-motion: no-preference/); assert.match(css, /font-display:swap/);
 });
 
@@ -110,7 +110,7 @@ t('design: every <img> has alt text, width and height; WebP files are small', ()
   const r = buildCopy(() => {});
   for (const f of ['index.html', 'archive/index.html']) for (const m of r.read(f).matchAll(/<img[^>]*>/g)) {
     assert.match(m[0], /alt="[^"]{20,}"/, 'alt text: ' + m[0].slice(0, 80)); assert.match(m[0], /width="\d+"/); assert.match(m[0], /height="\d+"/);
-    const src = m[0].match(/src="([^"]+)"/)[1]; assert.ok(statSync('public' + src).size < 60000, src + ' under 60 KB');
+    const src = m[0].match(/src="([^"]+)"/)[1]; assert.ok(statSync('public' + src.replace(/\.[0-9a-f]{10}(\.\w+)$/, '$1')).size < 60000, src + ' under 60 KB');
   }
 });
 
@@ -118,7 +118,7 @@ t('design: logo comes from LOGO_OPTION (header lockup + favicon), one-line swap'
   const home = buildCopy(() => {}).read('index.html'); assert.match(home, /<a class="brand"[^>]*aria-label="Sport Builds, home"><svg[^>]*aria-hidden="true"/);
   for (const k of ['a', 'b', 'c', 'b-final']) {
     const r = buildCopy((dir) => { const p = join(dir, 'site.config.mjs'); writeFileSync(p, readFileSync(p, 'utf8').replace(/LOGO_OPTION = '[\w-]+'/, `LOGO_OPTION = '${k}'`)); });
-    assert.equal(r.read('favicon.svg'), readFileSync(`docs/logo-options/option-${k}-mark.svg`, 'utf8')); assert.match(r.read('index.html'), new RegExp('<svg[^>]*class="logo"'));
+    assert.equal(r.read(r.read('index.html').match(/rel="icon" href="\/([^"]+)"/)[1]), readFileSync(`docs/logo-options/option-${k}-mark.svg`, 'utf8')); assert.match(r.read('index.html'), new RegExp('<svg[^>]*class="logo"'));
   }
 });
 
@@ -143,6 +143,23 @@ t('design: final palette has no green (css, svg logos used by the site, images c
     const svg = readFileSync(`docs/logo-options/${f}.svg`, 'utf8'); assert.doesNotMatch(svg, /0b3d2e|14604a/i, f + ' must not use the old green');
   }
   assert.match(readFileSync('site.config.mjs', 'utf8'), /LOGO_OPTION = 'b-final'/);
+});
+
+t('cache safety: every referenced /assets file is fingerprinted, exists, and is served immutable; HTML revalidates', () => {
+  const r = buildCopy(() => {}); const hashed = /\.[0-9a-f]{10}\.[a-z0-9]+$/;
+  const pages = ['index.html', 'archive/index.html', 'about/index.html', 'privacy/index.html', 'welcome/index.html', '404.html'];
+  const refs = new Set(); for (const f of [...pages.map((p) => r.read(p)), r.read(r.read('index.html').match(/\/assets\/style\.[0-9a-f]{10}\.css/)[0].slice(1))]) for (const m of f.matchAll(/\/assets\/[^"'()\s]+/g)) refs.add(m[0]);
+  assert.ok(refs.size >= 10, 'found assets: ' + refs.size);
+  for (const a of refs) { assert.match(a, hashed, 'not fingerprinted: ' + a); assert.ok(r.read(a.slice(1)).length > 0, 'missing file ' + a); }
+  const home = r.read('index.html');
+  for (const re of [/href="\/assets\/style\.[0-9a-f]{10}\.css"/, /src="\/assets\/subscribe\.[0-9a-f]{10}\.js"/, /rel="icon" href="\/assets\/favicon\.[0-9a-f]{10}\.svg"/, /rel="apple-touch-icon" href="\/assets\/apple-touch-icon\.[0-9a-f]{10}\.png"/, /og:image" content="https:\/\/sportbuilds\.co\/assets\/og\.[0-9a-f]{10}\.png"/]) assert.match(home, re);
+  assert.doesNotMatch(r.read(r.read('index.html').match(/\/assets\/style\.[0-9a-f]{10}\.css/)[0].slice(1)), /url\(\/assets\/[^)]*(?<![0-9a-f]{10}\.woff2)\)/, 'css font urls hashed');
+  const h = r.read('_headers');
+  assert.match(h, /\/assets\/\*\n {2}Cache-Control: public, max-age=31536000, immutable/); assert.doesNotMatch(h, /max-age=3600/);
+  for (const p of ['/', '/archive/*', '/about/*', '/privacy/*', '/404.html', '/sitemap.xml']) assert.match(h, new RegExp('\\n' + p.replace(/[*.\/]/g, '\\$&') + '\\n {2}Cache-Control: public, max-age=0, must-revalidate'));
+  // content changes -> new URL
+  const r2 = buildCopy((dir) => { const p = join(dir, 'public/assets/style.css'); writeFileSync(p, readFileSync(p, 'utf8') + '\n/* changed */'); });
+  assert.notEqual(r2.read('index.html').match(/style\.([0-9a-f]{10})\.css/)[1], home.match(/style\.([0-9a-f]{10})\.css/)[1], 'css hash changes with content');
 });
 
 t('welcome is noindex and not in the sitemap; others are indexable', () => {

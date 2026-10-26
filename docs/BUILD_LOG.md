@@ -148,3 +148,14 @@ What broke / decisions:
 1. The band's form inputs were cream on the dark band and looked harsh; switched to dark inputs with a hairline border.
 2. Focus ring colour on the always-dark band would have been near-black on light theme (invisible); band uses a gold ring.
 3. Playwright defaults to the light scheme, so earlier "after" shots would have shown the light theme; the set is now taken in dark with explicit light/dark home shots.
+
+## Round 5: stale green CSS after the retheme (Mon 26 Oct, about 13:00 to 13:30 Europe/London)
+What broke: Tim still saw the green design after the retheme deploy. The server was already serving the new CSS, but `/assets/style.css` (and fonts, images, logo, favicon, OG image) had unversioned names with `Cache-Control: public, max-age=3600`, so a browser that had loaded the old green CSS kept it for up to an hour. My own earlier verification used fresh browser profiles, so it could not catch this.
+
+Fix:
+- `build.mjs` fingerprints every file under `/assets` (name.<10-hex sha256>.ext), fonts first, then CSS (its hash covers the rewritten font URLs), then the rest, and rewrites all references in HTML and CSS (stylesheet, script, favicon, touch icon, og:image, preloads, images, font urls). The favicon and touch icon moved to `/assets/` so everything cache-immutable lives under one prefix. The build throws if any `/assets` file is not fingerprinted. Still zero dependencies (Node `crypto`), CSP unchanged.
+- `_headers`: `/assets/*` is `public, max-age=31536000, immutable`; `/`, `/archive/*`, `/about/*`, `/privacy/*`, `/welcome/*`, `/404.html`, `/sitemap.xml`, `/robots.txt` are `public, max-age=0, must-revalidate`. The old 3600 s rule is gone.
+- Tests (17 pass): new test that every referenced asset is fingerprinted and exists, the headers are as above, and the CSS hash changes when the CSS changes; the logo, font and image tests were adapted. `tools/verify.mjs` now discovers asset URLs from the page and checks the hash and the live cache headers.
+- Verification, live (new deployment 72d5d7d5, 15 s): HTML 200 with must-revalidate; hashed assets 200 with immutable; fresh Chrome profile and a warm-cache second load, dark and light: near-black `rgb(12,12,11)` / warm off-white `rgb(245,242,234)`, 0 green elements outside images, 0 external requests, 0 console issues; `verify.mjs` and the 7 Kit-form scenarios pass.
+- Stale-cache simulation (local server, one Chrome profile, same origin): visited the old green build (CSS cached for 3600 s, body `rgb(9,19,15)`), swapped to the new build at the same address, reloaded: the page requested the new hashed CSS and showed `rgb(12,12,11)`.
+- Note for anyone testing: the first load after this deploy needs no hard refresh; later deploys will not need one either.

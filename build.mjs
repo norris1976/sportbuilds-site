@@ -1,6 +1,7 @@
 // Static site generator. Zero dependencies: `node build.mjs` writes ./dist
 // Pages: /, /archive/, /welcome/, /about/, /privacy/, /404.html, sitemap.xml, robots.txt, _headers
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, renameSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import * as C from './site.config.mjs';
 
@@ -35,8 +36,8 @@ function layout({ path, title, description, body, noindex = false, hero }) {
 <meta name="theme-color" content="#f5f2ea" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)">
 ${noindex ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="canonical" href="${esc(canon)}">`}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${esc(C.SITE_NAME)}">
 <meta property="og:title" content="${esc(full)}">
@@ -268,7 +269,8 @@ const p404 = layout({
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync('public', OUT, { recursive: true });
-writeFileSync(join(OUT, 'favicon.svg'), readFileSync(`docs/logo-options/option-${C.LOGO_OPTION}-mark.svg`, 'utf8'));
+renameSync(join(OUT, 'apple-touch-icon.png'), join(OUT, 'assets/apple-touch-icon.png'));
+writeFileSync(join(OUT, 'assets/favicon.svg'), readFileSync(`docs/logo-options/option-${C.LOGO_OPTION}-mark.svg`, 'utf8'));
 for (const [path, html] of Object.entries(pages)) {
   const dir = join(OUT, path); mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'index.html'), html);
@@ -277,8 +279,27 @@ writeFileSync(join(OUT, '404.html'), p404);
 const lastmod = latest.date;
 writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap.map((p) => `  <url><loc>${C.SITE_URL}${p}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${C.SITE_URL}/sitemap.xml\n`);
+// ── Fingerprint every file under /assets (fonts, images, logo/favicon, CSS, JS) ─────────────────────
+// Each file is renamed name.<10-hex content hash>.ext and every reference in the HTML and CSS is rewritten, so a redeploy
+// always gets new URLs and browsers never keep stale styling. Order matters: fonts first (CSS refers to them), then CSS
+// (its hash covers the rewritten font URLs), then everything else. Hashed files are served immutable (see _headers).
+{
+  const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
+  const map = new Map(); // '/assets/old.ext' -> '/assets/old.<hash>.ext'
+  const web = (p) => '/' + p.slice(OUT.length + 1).split('\\').join('/');
+  const textFiles = () => [...walk(OUT).filter((f) => f.endsWith('.html')), ...walk(join(OUT, 'assets')).filter((f) => f.endsWith('.css'))];
+  const rewrite = (files) => { for (const f of files) { let t = readFileSync(f, 'utf8'); const o = t; for (const [from, to] of [...map].sort((a, b) => b[0].length - a[0].length)) t = t.split(from).join(to); if (t !== o) writeFileSync(f, t); } };
+  const hashOne = (f) => { const h = createHash('sha256').update(readFileSync(f)).digest('hex').slice(0, 10); const np = f.replace(/\.([^./\\]+)$/, `.${h}.$1`); renameSync(f, np); map.set(web(f), web(np)); };
+  const assets = walk(join(OUT, 'assets'));
+  for (const f of assets.filter((f) => /\.(woff2|webp|png|svg|txt)$/.test(f))) hashOne(f);
+  rewrite(walk(join(OUT, 'assets')).filter((f) => f.endsWith('.css')));
+  hashOne(join(OUT, 'assets/style.css')); hashOne(join(OUT, 'assets/subscribe.js'));
+  rewrite(textFiles());
+  const unhashed = walk(join(OUT, 'assets')).filter((f) => !/\.[0-9a-f]{10}\.[a-z0-9]+$/.test(f));
+  if (unhashed.length) throw new Error('unfingerprinted assets: ' + unhashed.join(', '));
+}
 // Cloudflare Pages reads _headers. connect-src allows ONLY Kit's form endpoint (used when the visitor presses
 // the subscribe button); nothing else can be fetched. form-action allows only Kit for the no-JavaScript POST.
 const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://app.kit.com; form-action 'self' https://app.kit.com; base-uri 'none'; frame-ancestors 'none'; object-src 'none'`;
-writeFileSync(join(OUT, '_headers'), `/*\n  Content-Security-Policy: ${csp}\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n\n/welcome\n  X-Robots-Tag: noindex, nofollow\n\n/welcome/*\n  X-Robots-Tag: noindex, nofollow\n\n/assets/*\n  Cache-Control: public, max-age=3600\n`);
+writeFileSync(join(OUT, '_headers'), `/*\n  Content-Security-Policy: ${csp}\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n\n/welcome\n  X-Robots-Tag: noindex, nofollow\n\n/welcome/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: public, max-age=0, must-revalidate\n\n/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n\n/\n  Cache-Control: public, max-age=0, must-revalidate\n\n/archive/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/about/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/privacy/*\n  Cache-Control: public, max-age=0, must-revalidate\n\n/404.html\n  Cache-Control: public, max-age=0, must-revalidate\n\n/sitemap.xml\n  Cache-Control: public, max-age=0, must-revalidate\n\n/robots.txt\n  Cache-Control: public, max-age=0, must-revalidate\n`);
 console.log(`built ${Object.keys(pages).length + 1} pages, ${builds.length} build(s); Kit form ${kitConfigured ? 'CONFIGURED' : 'NOT configured (placeholder)'}`);

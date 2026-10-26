@@ -12,7 +12,7 @@ Each week's tool lives on its **own subdomain** (issue 1 is `5k.sportbuilds.co`)
 
 ```bash
 npm run build     # writes dist/
-npm test          # 16 tests: data validation, design tokens (WCAG AA), fonts/CSP, add-a-week, Kit wiring, noindex, forbidden-content guard
+npm test          # 17 tests: data validation, design tokens (WCAG AA), fonts/CSP, add-a-week, Kit wiring, noindex, forbidden-content guard
 npm run serve     # http://localhost:5174 (mimics Cloudflare Pages: /about/ -> about/index.html, custom 404)
 ```
 
@@ -61,6 +61,9 @@ Our own styled form: first name and email only, no checkbox, no Kit badge, no Ki
 Kit settings (done by the Editor): double opt-in on, confirmation email from hello@sportbuilds.co, after-confirm redirect to `https://sportbuilds.co/welcome/` (that URL only resolves once the domain is attached).
 
 Other placeholders still marked in the pages: About page bio and photo, full privacy policy (draft in `docs/DRAFT_COPY.md`, not live until Tim approves). Search the repo for `PLACEHOLDER` and `TODO(`.
+
+## Cache safety (fingerprinted assets)
+`build.mjs` renames every file under `/assets` (fonts, images, logo/favicon/touch icon, OG image, CSS, JS, licence) to `name.<10-hex content hash>.ext` and rewrites every reference in the HTML and CSS. `_headers` serves `/assets/*` as `public, max-age=31536000, immutable` (safe because every file there is hashed, and the build fails if one is not) and the HTML, sitemap and robots.txt as `max-age=0, must-revalidate`. A redeploy therefore always shows fresh styling. Edit the sources in `public/` as before; never link `/assets/...` by hand.
 
 ## Design and logo
 - Design system lives in `public/assets/style.css` (tokens at the top; dark-first near-black + off-white + gold scoreboard look, with a warm off-white light theme; no green anywhere, guarded by a test; gold is used only as a fill behind dark text on light, or as text on dark, so it passes AA). Motion is wrapped in `prefers-reduced-motion: no-preference`.
