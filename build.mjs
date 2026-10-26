@@ -102,7 +102,7 @@ function buildCard(b, { featured = false, heading = 'h3', label = '' } = {}) {
   <p class="pitch">${esc(b.description)}</p>
   ${tagList(b)}
   <div class="links">
-    <a class="btn primary" href="${esc(b.url)}" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span><span class="sr-only"> (${esc(host(b.url))})</span></a>
+    <a class="btn primary" href="${esc(b.url)}" target="_blank" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span><span class="sr-only"> (${esc(host(b.url))}, opens in a new tab)</span></a>
     <a class="btn" href="${esc(b.repo)}" rel="noopener">Source code</a>${b.issueUrl ? `\n    <a class="btn" href="${esc(b.issueUrl)}" rel="noopener">Read the issue</a>` : ''}
   </div>
   ${b.fallbackUrl ? `<p class="mirror">Also available at <a href="${esc(b.fallbackUrl)}" rel="noopener">${esc(host(b.fallbackUrl))}</a>.</p>` : ''}
@@ -157,7 +157,7 @@ pages['/'] = layout({
 ${im ? `  <figure class="preview">
     <div class="shot-desktop"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>${esc(host(latest.url))}</span></div><img src="${esc(im.desktop.src)}" width="${im.desktop.width}" height="${im.desktop.height}" alt="${esc(im.desktop.alt)}" fetchpriority="high" decoding="async"></div>
     <img class="shot-phone" src="${esc(im.phone.src)}" width="${im.phone.width}" height="${im.phone.height}" alt="${esc(im.phone.alt)}" decoding="async">
-    <figcaption>Latest build, issue ${latest.issue}: ${esc(latest.title)}. <a href="${esc(latest.url)}" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span></a></figcaption>
+    <figcaption>Latest build, issue ${latest.issue}: ${esc(latest.title)}. <a href="${esc(latest.url)}" target="_blank" rel="noopener">Open the tool <span aria-hidden="true">&rarr;</span><span class="sr-only"> (opens in a new tab)</span></a></figcaption>
   </figure>` : ''}
 </div></section>`,
   body: `<section class="section" aria-labelledby="this-week"><div class="wrap">
@@ -197,7 +197,7 @@ pages['/welcome/'] = layout({
   <h2 id="w-h">Your first build</h2>
   <h3>${esc(first.title)}</h3>
   <p>${esc(first.description)}</p>
-  <p class="links centered"><a class="btn primary" href="${esc(first.url)}" rel="noopener">Open the ${esc(first.title)} <span aria-hidden="true">&rarr;</span></a></p>
+  <p class="links centered"><a class="btn primary" href="${esc(first.url)}" target="_blank" rel="noopener">Open the ${esc(first.title)} <span aria-hidden="true">&rarr;</span><span class="sr-only"> (opens in a new tab)</span></a></p>
   ${first.fallbackUrl ? `<p class="mirror">Also at <a href="${esc(first.fallbackUrl)}" rel="noopener">${esc(host(first.fallbackUrl))}</a>.</p>` : ''}
 </section>
 <section class="card prose center" aria-labelledby="w2"><h2 id="w2">What should I build next?</h2>
