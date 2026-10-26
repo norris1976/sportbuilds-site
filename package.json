@@ -1,0 +1,13 @@
+{
+  "name": "sportbuilds-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Master site for the Sport Builds newsletter. Static, no runtime dependencies.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/run.mjs",
+    "serve": "node tools/serve.mjs dist 5174"
+  },
+  "license": "MIT"
+}

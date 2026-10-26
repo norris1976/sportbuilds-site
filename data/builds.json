@@ -1,0 +1,12 @@
+[
+  {
+    "issue": 1,
+    "title": "Saturday 5K Pace Planner",
+    "description": "Enter your 5K time, age and target to get an age-graded percentage, per-km splits for your course and a shareable result card. Works for any 5K, including weekly timed runs.",
+    "date": "2026-10-26",
+    "url": "https://5k.sportbuilds.co",
+    "fallbackUrl": "https://saturday-5k-pace-planner.vercel.app",
+    "repo": "https://github.com/norris1976/saturday-5k-pace-planner",
+    "tags": ["running", "5K", "age grading", "pacing"]
+  }
+]
