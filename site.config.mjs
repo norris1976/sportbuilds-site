@@ -2,7 +2,7 @@
 
 export const SITE_URL = 'https://sportbuilds.co';   // canonical origin (no trailing slash)
 export const SITE_NAME = 'Sport Builds';
-export const TAGLINE = 'A different sports app, vibe-coded every week.';
+export const TAGLINE = 'A different sports app, built with AI every week.';
 
 // ──────────────────────────────────────────────────────────────────────────
 // SUBSCRIBE FORM (Kit). Wired to the real Kit form on 26 Oct 2026. If KIT_FORM_ID is set

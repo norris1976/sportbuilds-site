@@ -46,7 +46,7 @@ ${noindex ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="can
 <meta property="og:image" content="${esc(C.SITE_URL)}/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Sport Builds: a different sports app, vibe-coded every week">
+<meta property="og:image:alt" content="Sport Builds: a different sports app, built with AI every week">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
@@ -146,11 +146,11 @@ const sitemap = [];
 const im = latest.images;
 pages['/'] = layout({
   path: '/', title: C.SITE_NAME,
-  description: 'A different sports app, vibe-coded every week, with honest build notes. Free weekly newsletter by Tim Norris.',
+  description: 'A different sports app, built with AI every week, with honest build notes. Free weekly newsletter by Tim Norris.',
   hero: `<section class="hero"><div class="wrap hero-grid">
   <div class="hero-copy">
     <p class="eyebrow">Weekly newsletter</p>
-    <h1>A different sports app, <span class="hl">vibe-coded</span> every week.</h1>
+    <h1>A different sports app, <span class="hl">built with AI</span> every week.</h1>
     <p class="lede">I build one small, useful sports tool each week with AI, then tell you honestly how it went: the prompts, what broke and what I fixed.</p>
     <div class="cta"><a class="btn primary" href="#subscribe">Get the weekly build</a><a class="btn ghost" href="/archive/">Browse all builds</a></div>
   </div>
@@ -168,7 +168,7 @@ ${buildCard(latest, { featured: true, heading: 'h3' })}
 <div class="section-head"><div><p class="eyebrow">The method</p><h2 id="how">How Sport Builds works</h2></div></div>
 <ol class="steps">
   <li><strong>One idea a week</strong><span>A small sports tool that does one job well, built from a clear brief.</span></li>
-  <li><strong>Built with AI</strong><span>Vibe-coded in public: real prompts, real tests, a live demo and open source code.</span></li>
+  <li><strong>Built with AI</strong><span>Built in public: real prompts, real tests, a live demo and open source code.</span></li>
   <li><strong>Honest notes</strong><span>Every issue says what broke and how it was fixed, not just the shiny result.</span></li>
 </ol>${older.length ? '' : `<p class="more muted">More builds are on the way, one a week. <a href="/archive/">See the archive</a>.</p>`}</div></section>
 ${older.length ? `<section class="section" aria-labelledby="recent"><div class="wrap"><div class="section-head"><div><p class="eyebrow">Archive</p><h2 id="recent">Recent builds</h2></div></div><ul class="archive">${older.slice(0, 3).map((b) => `<li>${buildCard(b)}</li>`).join('')}</ul><p class="more"><a href="/archive/">See the full archive &rarr;</a></p></div></section>` : ''}

@@ -16,7 +16,7 @@ body{margin:0;width:1200px;height:630px;background:#0c0c0b;color:#f4f1e8;font-fa
 body::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(244,241,232,.06) 1px,transparent 1px);background-size:100% 42px}
 .l{color:#f4f1e8;position:relative;margin-bottom:44px} h1{position:relative;margin:0;font:800 112px/1.02 BC,sans-serif;text-transform:uppercase;max-width:1000px}
 .hl{white-space:nowrap;background:#f4c430;color:#131311;padding:0 14px} p{position:relative;margin:34px 0 0;font-size:30px;color:#b9b6ab}</style>
-<div class=l>${lockup}</div><h1>A different sports app, <span class=hl>vibe-coded</span> every week.</h1><p>Honest build notes · sportbuilds.co</p>`);
+<div class=l>${lockup}</div><h1>A different sports app, <span class=hl>built with AI</span> every week.</h1><p>Honest build notes · sportbuilds.co</p>`);
   const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
   await page.goto('file:///tmp/og.html'); await page.evaluate(() => document.fonts.ready); await page.screenshot({ path: 'public/assets/og.png' }); await page.close();
 }
