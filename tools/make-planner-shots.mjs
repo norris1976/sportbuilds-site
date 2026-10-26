@@ -9,10 +9,10 @@ execFileSync('mkdir', ['-p', tmp]);
 const fill = async (page) => { await page.fill('#pb', '24:30'); await page.fill('#target', '23:45'); await page.fill('#age', '42');
   await page.selectOption('#category', 'M'); await page.selectOption('#profile', 'rolling'); await page.selectOption('#strategy', 'negative'); };
 // desktop: 720 x 720 window onto the top of the form
-{ const ctx = await browser.newContext({ viewport: { width: 720, height: 720 }, deviceScaleFactor: 1, colorScheme: 'light' }); const p = await ctx.newPage();
+{ const ctx = await browser.newContext({ viewport: { width: 720, height: 720 }, deviceScaleFactor: 1, colorScheme: 'dark' }); const p = await ctx.newPage();
   await p.goto(url, { waitUntil: 'networkidle' }); await fill(p); await p.evaluate(() => document.activeElement?.blur()); await p.screenshot({ path: `${tmp}/5k-desktop.png` }); await ctx.close(); }
 // phone: 390 x 750 CSS px at 1.2308x = 480 x 923
-const phone = { viewport: { width: 390, height: 750 }, deviceScaleFactor: 480 / 390, isMobile: true, hasTouch: true, colorScheme: 'light' };
+const phone = { viewport: { width: 390, height: 750 }, deviceScaleFactor: 480 / 390, isMobile: true, hasTouch: true, colorScheme: 'dark' };
 { const ctx = await browser.newContext(phone); const p = await ctx.newPage(); await p.goto(url, { waitUntil: 'networkidle' }); await fill(p); await p.evaluate(() => document.activeElement?.blur());
   await p.screenshot({ path: `${tmp}/5k-phone-form.png` });
   await p.click('button.primary[type=submit]'); await p.waitForSelector('#results:not([hidden])');

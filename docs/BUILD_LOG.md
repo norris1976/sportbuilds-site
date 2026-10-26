@@ -177,3 +177,6 @@ Fix:
 ## Round 7: planner subdomain is live, fallback link removed (Mon 26 Oct, afternoon Europe/London)
 - `5k.sportbuilds.co` now serves the planner over HTTPS (CNAME added at Namecheap with Tim's approval). Removed `fallbackUrl` from issue 1 in `data/builds.json`, so the home and archive entries link only to `https://5k.sportbuilds.co` and the "Also available at" line is gone. The README keeps the `vercel.app` alias as an alternate; `tools/make-planner-shots.mjs` now defaults to the new address.
 - Checked home, archive, welcome and sitemap: no `vercel.app` references remain in built pages. 17 tests pass; deployed with `npm run deploy`; live check on pages.dev with `tools/verify.mjs`: all pages 200 (404 page 404), strict CSP present, no console errors, no external requests.
+
+## Planner screenshots refreshed for the white input card (Mon 26 Oct, about 14:40 Europe/London)
+- The planner's input card is now white. Re-ran `tools/make-planner-shots.mjs` against https://5k.sportbuilds.co/ (now in dark mode so the white card stands out; 0 green-ish pixels), rebuilt, `npm run deploy`, and checked that the live preview serves the new hashed images (byte-identical to `dist/`). No code changes besides the colour scheme in the shot script.
