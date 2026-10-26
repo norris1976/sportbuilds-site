@@ -211,14 +211,14 @@ pages['/welcome/'] = layout({
 const contact = C.CONTACT_EMAIL ? `<a href="mailto:${esc(C.CONTACT_EMAIL)}">${esc(C.CONTACT_EMAIL)}</a>` : `<span class="placeholder">PLACEHOLDER: contact address to be confirmed</span>`;
 pages['/about/'] = layout({
   path: '/about/', title: 'About',
-  description: 'Sport Builds is a weekly newsletter by Tim Norris, a former sports-tech developer who now builds with AI.',
+  description: 'Sport Builds is a weekly newsletter by Tim Norris, a developer who builds with AI.',
   hero: hero('About', 'About Sport Builds', '', '', true),
   body: `<div class="wrap stack"><section class="card prose" aria-labelledby="a1">
   <h2 id="a1">What this is</h2>
   <p>Sport Builds is a weekly newsletter. Each week I build a different sports app or tool with AI, put it online, publish the source code and write up how it went, including the parts that went wrong.</p>
   <h2>Who&rsquo;s behind it</h2>
-  <p>I&rsquo;m Tim Norris, a former sports-tech developer who now builds with AI. I build these tools using public data and my own work only.</p>
-  <p class="placeholder" role="note">PLACEHOLDER: Tim to add a short personal bio, photo and any links he wants public. Nothing else is claimed here.</p>
+  <p>I&rsquo;m Tim, a developer from Northern Ireland. I spent years building software, some of it in the elite sport industry, and now build with AI. Sport Builds is where I put that to the test in public: one small sports tool a week, the prompts I used, the code, and an honest account of what broke. My own projects live at <a href="https://nozza.co/" rel="noopener">Nozza.co</a>.</p>
+  <p>I build these tools using public data and my own work only.</p>
   <h2>How the builds work</h2>
   <ul>
     <li>Each tool lives on its own address, so one week&rsquo;s build never gets in the way of another&rsquo;s.</li>

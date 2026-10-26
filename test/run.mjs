@@ -76,11 +76,11 @@ t('footer on every page has the Nozza.co outbound link (rel=noopener) and nothin
   }
 });
 
-t('contact address is set and the form/contact placeholders are gone; About bio placeholder remains; Privacy is a real page', () => {
+t('contact address is set and the form/contact placeholders are gone; About has the real bio and no placeholder; Privacy is a real page', () => {
   const r = buildCopy(() => {});
   assert.match(r.read('about/index.html'), /mailto:hello@sportbuilds\.co/); assert.match(r.read('privacy/index.html'), /mailto:hello@sportbuilds\.co/);
   assert.doesNotMatch(r.read('about/index.html') + r.read('privacy/index.html') + r.read('index.html'), /contact address to be confirmed|paste Kit|Kit form is not connected/);
-  assert.match(r.read('about/index.html'), /PLACEHOLDER: Tim to add a short personal bio/); const pv = r.read('privacy/index.html'); assert.doesNotMatch(pv, /PLACEHOLDER|Placeholder|placeholder/); assert.match(pv, /Last updated: 26 October 2026/);
+  { const ab = r.read('about/index.html'); assert.doesNotMatch(ab, /PLACEHOLDER|placeholder/); assert.match(ab, /I&rsquo;m Tim, a developer from Northern Ireland\. I spent years building software, some of it in the elite sport industry, and now build with AI\./); assert.match(ab, /href="https:\/\/nozza\.co\/" rel="noopener">Nozza\.co<\/a>/); assert.doesNotMatch(ab, /vibe/i); } const pv = r.read('privacy/index.html'); assert.doesNotMatch(pv, /PLACEHOLDER|Placeholder|placeholder/); assert.match(pv, /Last updated: 26 October 2026/);
   for (const u of ['https://www.cloudflare.com/privacypolicy/', 'https://kit.com/privacy', 'https://ico.org.uk/make-a-complaint/']) assert.ok(pv.includes(`href="${u}" rel="noopener"`), u);
   assert.doesNotMatch(pv, /vibe/i); assert.match(pv, /no cookies/); assert.match(pv, /Data Privacy Framework/);
 });
