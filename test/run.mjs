@@ -155,11 +155,28 @@ t('cache safety: every referenced /assets file is fingerprinted, exists, and is 
   for (const re of [/href="\/assets\/style\.[0-9a-f]{10}\.css"/, /src="\/assets\/subscribe\.[0-9a-f]{10}\.js"/, /rel="icon" href="\/assets\/favicon\.[0-9a-f]{10}\.svg"/, /rel="apple-touch-icon" href="\/assets\/apple-touch-icon\.[0-9a-f]{10}\.png"/, /og:image" content="https:\/\/sportbuilds\.co\/assets\/og\.[0-9a-f]{10}\.png"/]) assert.match(home, re);
   assert.doesNotMatch(r.read(r.read('index.html').match(/\/assets\/style\.[0-9a-f]{10}\.css/)[0].slice(1)), /url\(\/assets\/[^)]*(?<![0-9a-f]{10}\.woff2)\)/, 'css font urls hashed');
   const h = r.read('_headers');
-  assert.match(h, /\/assets\/\*\n {2}Cache-Control: public, max-age=31536000, immutable/); assert.doesNotMatch(h, /max-age=3600/);
+  // Pages joins Cache-Control from every matching rule, so immutable must never match the stable-named /assets/issue-1/* email images
+  const imm = 'Cache-Control: public, max-age=31536000, immutable';
+  assert.match(h, new RegExp('\\n/assets/:file\\n {2}' + imm)); assert.match(h, new RegExp('\\n/assets/img/\\*\\n {2}' + imm)); assert.match(h, new RegExp('\\n/assets/fonts/\\*\\n {2}' + imm));
+  assert.doesNotMatch(h, /\n\/assets\/\*\n/, 'a bare /assets/* immutable rule would also match /assets/issue-1/*');
+  assert.match(h, /\n\/assets\/issue-1\/\*\n {2}Cache-Control: public, max-age=3600\n/);
+  assert.equal(h.match(/max-age=3600/g).length, 1);
   for (const p of ['/', '/archive/*', '/about/*', '/privacy/*', '/404.html', '/sitemap.xml']) assert.match(h, new RegExp('\\n' + p.replace(/[*.\/]/g, '\\$&') + '\\n {2}Cache-Control: public, max-age=0, must-revalidate'));
   // content changes -> new URL
   const r2 = buildCopy((dir) => { const p = join(dir, 'public/assets/style.css'); writeFileSync(p, readFileSync(p, 'utf8') + '\n/* changed */'); });
   assert.notEqual(r2.read('index.html').match(/style\.([0-9a-f]{10})\.css/)[1], home.match(/style\.([0-9a-f]{10})\.css/)[1], 'css hash changes with content');
+});
+
+t('issue-1 email images: stable names (not fingerprinted), webp + jpg, <= 200 KB, <= 1200 px wide, short cache, no-transform kept', () => {
+  const r = buildCopy(() => {}); const rb = (p) => readFileSync(join(r.dir, 'dist', p));
+  for (const n of ['planner-desktop', 'planner-phone']) for (const ext of ['webp', 'jpg']) {
+    const f = `assets/issue-1/${n}.${ext}`; const b = rb(f);
+    assert.ok(b.length > 1000 && b.length < 200 * 1024, f + ' size ' + b.length);
+    if (ext === 'jpg') { assert.equal(b[0], 0xff); assert.equal(b[1], 0xd8); } else assert.equal(b.slice(8, 12).toString(), 'WEBP');
+  }
+  const wd = (f) => { const b = rb(f); return f.endsWith('jpg') ? (() => { let i = 2; while (i < b.length) { if (b[i] !== 0xff) { i++; continue; } const m = b[i + 1]; if (m >= 0xc0 && m <= 0xc3) return b.readUInt16BE(i + 7); i += 2 + b.readUInt16BE(i + 2); } })() : (b.slice(12, 16).toString() === 'VP8X' ? 1 + b.readUIntLE(24, 3) : b.slice(12, 16).toString() === 'VP8L' ? 1 + (b.readUInt16LE(21) & 0x3fff) : b.readUInt16LE(26) & 0x3fff); };
+  for (const f of ['planner-desktop.webp', 'planner-desktop.jpg', 'planner-phone.webp', 'planner-phone.jpg']) assert.ok(wd('assets/issue-1/' + f) <= 1200, f + ' width');
+  assert.match(r.read('_headers'), /\/\*\n(?: {2}.*\n)* {2}Cache-Control: no-transform\n/);
 });
 
 t('welcome is noindex and not in the sitemap; others are indexable', () => {
