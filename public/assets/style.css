@@ -50,6 +50,7 @@ p { margin:0 0 14px; } p:last-child { margin-bottom:0; }
 .muted { color:var(--muted); } .small { font-size:13px; }
 .lede { font-size:clamp(17px,2.4vw,21px); line-height:1.5; max-width:34em; color:var(--ink); }
 .hl { background:var(--accent); color:var(--on-accent); padding:0 .12em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+h1 .hl { display:inline-block; line-height:1; padding:.1em .14em .06em; margin:.08em 0; }
 
 /* header */
 .site-header { border-bottom:1px solid var(--line); background:var(--paper); }
