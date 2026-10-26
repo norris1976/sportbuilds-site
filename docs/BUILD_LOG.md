@@ -59,7 +59,7 @@ Raw notes written as the build happened, failures included. Times are Europe/Lon
 | 4 to 5 Fixes and verification (incl. Lighthouse) | 11:44 | 11:48 |
 | 6 Docs, commit, push | 11:48 | 11:52 (about 13 minutes in total, clock times approximate) |
 
-## Round 2: Cloudflare Pages preview deploy (Mon 26 Oct, 12:09 to about 12:20)
+## Round 2: Cloudflare Pages preview deploy (Mon 26 Oct, 12:09 to 12:13)
 Instruction: create a Pages project `sportbuilds-site` (direct upload, production branch main), deploy to `*.pages.dev` only (no custom domain, no DNS), verify the live URL, add a deploy command to the docs, draft About and Privacy copy for Tim, commit and push. Token and account ID supplied via `CLOUDFLARE_API_TOKEN` and `/workspace/.cf_account_id`; neither is written to any file or log (wrangler output was also filtered for the account ID).
 
 What I ran (12:09 to 12:11):
@@ -85,4 +85,4 @@ Notes:
 |---|---|---|
 | Rebuild, project create, first deploy | 12:09 | 12:10 |
 | Live verification, CSP bug found, fix, redeploy | 12:10 | 12:12 |
-| Docs, draft copy, commit, push | 12:12 | see git log |
+| Docs, draft copy, commit, push | 12:12 | 12:13 |
