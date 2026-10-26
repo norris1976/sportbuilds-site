@@ -1,6 +1,6 @@
 # Sport Builds: master site
 
-The website for **Sport Builds**, Tim Norris's weekly newsletter where a different sports app is vibe-coded each week.
+The website for **Sport Builds**, Tim Norris's weekly newsletter where a different sports app is built with AI each week.
 Static, no runtime dependencies, no analytics, no cookies. Built to be hosted on **Cloudflare Pages**.
 
 Pages: Home (`/`), Archive (`/archive/`), Welcome (`/welcome/`, noindex, shown after email confirmation), About, Privacy (placeholder), 404.

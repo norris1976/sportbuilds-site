@@ -215,7 +215,7 @@ pages['/about/'] = layout({
   hero: hero('About', 'About Sport Builds', '', '', true),
   body: `<div class="wrap stack"><section class="card prose" aria-labelledby="a1">
   <h2 id="a1">What this is</h2>
-  <p>Sport Builds is a weekly newsletter. Each week I vibe-code a different sports app or tool with AI, put it online, publish the source code and write up how it went, including the parts that went wrong.</p>
+  <p>Sport Builds is a weekly newsletter. Each week I build a different sports app or tool with AI, put it online, publish the source code and write up how it went, including the parts that went wrong.</p>
   <h2>Who&rsquo;s behind it</h2>
   <p>I&rsquo;m Tim Norris, a former sports-tech developer who now builds with AI. I build these tools using public data and my own work only.</p>
   <p class="placeholder" role="note">PLACEHOLDER: Tim to add a short personal bio, photo and any links he wants public. Nothing else is claimed here.</p>

@@ -122,7 +122,7 @@ Direction: sports-editorial plus maker's notebook. Paper background with faint r
 4. Lazy-loaded images were blank in full-page screenshots; featured card images are eager, and `tools/fullpage.mjs` now waits for image decode (a first-image blank on the deployed home page in one screenshot was a decode race in the screenshot, not a site bug).
 5. Band eyebrow rendered too large (`.band .band-intro p` selector hit it); narrowed with `:not(.eyebrow)`.
 6. Mobile header wrapped nav under the logo; smaller logo and nav at 520px and below.
-7. "VIBE-CODED" broke across lines; `white-space:nowrap`. OG image highlight overlapped lines; fixed.
+7. The highlighted headline phrase broke across lines; `white-space:nowrap`. OG image highlight overlapped lines; fixed.
 8. Logo preview sheet clipped large lockups; grid columns `minmax(0,1fr)`.
 9. `tools/verify.mjs` still expected the old CSP (`connect-src 'none'`), so the live header check reported "CSP header missing" after deploy; updated to the new policy.
 10. Alt 2 mockup headline overflowed the frame; reduced size and no-wrap.

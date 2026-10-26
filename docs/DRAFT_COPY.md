@@ -14,7 +14,7 @@ One thing to resolve first: the live About placeholder currently says "a former 
 
 I'm Tim Norris, a developer and architect who now builds with AI.
 
-Sport Builds is my weekly newsletter. Each week I vibe-code a different sports app with AI, put it online, publish the source code and tell you honestly how it went: the prompts I used, what broke and how I fixed it.
+Sport Builds is my weekly newsletter. Each week I build a different sports app with AI, put it online, publish the source code and tell you honestly how it went: the prompts I used, what broke and how I fixed it.
 
 The first build is the [Saturday 5K Pace Planner](https://5k.sportbuilds.co): you enter a 5K time, your age and a target, and it gives you an age-graded percentage, per-km splits for your course and a card you can share.
 
